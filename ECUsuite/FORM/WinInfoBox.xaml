@@ -1,0 +1,16 @@
+﻿<Window x:Class="ECUsuite.WinInfoBox"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:ECUsuite"
+        mc:Ignorable="d"
+        Title="WinInfoBox" Height="303" Width="347">
+    <Grid>
+        <Grid.ColumnDefinitions>
+        </Grid.ColumnDefinitions>
+        <Label Content="Message" Name ="LblMessage" Margin="10,10,10,74" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+        <Button Content="OK" Margin="10,244,10,10" Click="BtnOk_Click" Name="BtnOk"/>
+
+    </Grid>
+</Window>

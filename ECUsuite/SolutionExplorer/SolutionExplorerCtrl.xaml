@@ -1,0 +1,53 @@
+﻿<UserControl x:Class="ECUsuite.SolutionExplorerCtrl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:ECUsuite"
+             xmlns:syncfusion="http://schemas.syncfusion.com/wpf" 
+             xmlns:editors="clr-namespace:Syncfusion.Windows.Controls.Input;assembly=Syncfusion.SfInput.Wpf"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800">
+    <Grid>
+        <syncfusion:SfTreeGrid x:Name="treeGrid" 
+                               Grid.Column="0"
+                               ColumnSizer="Star"
+                               ChildPropertyName="Children"            
+                               AutoGenerateColumns="False" 
+                               AllowAutoSizingExpanderColumn="True" 
+                               AllowResizingColumns="True"
+                               AllowFiltering="True" 
+                               GridLinesVisibility="None"
+                               AllowEditing="True"
+                               AllowDraggingColumns="True"
+                               AllowDraggingRows="True"
+                               FilterLevel="Extended" 
+                               MouseDoubleClick="treeGrid_MouseDoubleClick">                  <!--parents will be shown, even if they not match the filter-->
+            <syncfusion:SfTreeGrid.Columns>
+                <syncfusion:TreeGridTemplateColumn MappingName="Varname">
+                    <syncfusion:TreeGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Horizontal" >
+                                <Image Source="{Binding ICON}" HorizontalAlignment="Left"  Margin="5"/>
+                                <TextBlock Text="{Binding Varname}"/>
+                            </StackPanel>
+                        </DataTemplate>
+                    </syncfusion:TreeGridTemplateColumn.CellTemplate>
+                    <syncfusion:TreeGridTemplateColumn.EditTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Horizontal">
+                                <Image Source="{Binding ICON}" HorizontalAlignment="Left"  Margin="5"/>
+                                <TextBox Text="{Binding Varname, Mode=TwoWay}"/>
+                            </StackPanel>
+                        </DataTemplate>
+                    </syncfusion:TreeGridTemplateColumn.EditTemplate>
+                </syncfusion:TreeGridTemplateColumn>
+                
+                <syncfusion:TreeGridTextColumn HeaderText="Address" MappingName="SymboAddressHex"/>
+                <syncfusion:TreeGridTextColumn HeaderText="Description" MappingName="Description" />
+                <syncfusion:TreeGridTextColumn HeaderText="size" MappingName="SymbolSizeXY" />
+            </syncfusion:SfTreeGrid.Columns>
+        </syncfusion:SfTreeGrid >
+
+    </Grid>
+</UserControl>

@@ -1,0 +1,34 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows7.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+    <BaseOutputPath>D:\Programme\ECUstudio</BaseOutputPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Office.Interop.Excel" Version="15.0.4795.1001" />
+    <PackageReference Include="Syncfusion.SfSkinManager.WPF" Version="23.2.7" />
+    <PackageReference Include="Syncfusion.Themes.Windows11Dark.WPF" Version="23.2.7" />
+    <PackageReference Include="Syncfusion.UI.WPF.NET" Version="23.1.36" />
+    <PackageReference Include="System.Data.OleDb" Version="8.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="ECU\EDC16\" />
+    <Folder Include="MISC\" />
+    <Folder Include="ECU\MSA15\" />
+	<Folder Include="ICONS" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ECUsuite.Core\ECUsuite.Core.csproj" />
+    <ProjectReference Include="..\ECUsuite.Data\ECUsuite.Data.csproj" />
+    <ProjectReference Include="..\ECUsuite.ECU\ECUsuite.ECU.csproj" />
+    <ProjectReference Include="..\ECUsute.MapEditor\ECUsuite.MapEditor.csproj" />
+  </ItemGroup>
+
+</Project>

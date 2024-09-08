@@ -1,0 +1,18 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <UseWPF>true</UseWPF>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="syncfusion.ui.wpf.net" Version="23.1.36" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ECUsuite.Data\ECUsuite.Data.csproj" />
+  </ItemGroup>
+
+</Project>
