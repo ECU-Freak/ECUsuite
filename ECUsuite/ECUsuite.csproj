@@ -7,7 +7,45 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
     <BaseOutputPath>D:\Programme\ECUstudio</BaseOutputPath>
+    <ApplicationIcon>Icons\EDCsuiteICON.ico</ApplicationIcon>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="ICONS\CUSTOM\**" />
+    <EmbeddedResource Remove="ICONS\CUSTOM\**" />
+    <None Remove="ICONS\CUSTOM\**" />
+    <Page Remove="ICONS\CUSTOM\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="Icons\BoschPD.png" />
+    <None Remove="Icons\car-engine.png" />
+    <None Remove="Icons\EDC15.png" />
+    <None Remove="Icons\FolderClosed.png" />
+    <None Remove="Icons\FolderClosed.svg" />
+    <None Remove="Icons\FolderOpened.png" />
+    <None Remove="Icons\fuel.png" />
+    <None Remove="Icons\NewDocument.png" />
+    <None Remove="Icons\OpenProjectFolder.png" />
+    <None Remove="Icons\Save.png" />
+    <None Remove="Icons\SaveAll.png" />
+    <None Remove="Icons\SaveAll.svg" />
+    <None Remove="Icons\SaveAndClose.png" />
+    <None Remove="Icons\SaveAs.png" />
+    <None Remove="Icons\SaveFileDialog.png" />
+    <None Remove="Icons\SaveTable.png" />
+    <None Remove="Icons\speedometer.png" />
+    <None Remove="Icons\stacked.png" />
+    <None Remove="Icons\turbo.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Icons\EDCsuiteICON.ico" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Icons\EDCsuiteICON.ico" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Office.Interop.Excel" Version="15.0.4795.1001" />
@@ -18,17 +56,33 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="ECU\EDC16\" />
     <Folder Include="MISC\" />
-    <Folder Include="ECU\MSA15\" />
-	<Folder Include="ICONS" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\ECUsuite.Core\ECUsuite.Core.csproj" />
-    <ProjectReference Include="..\ECUsuite.Data\ECUsuite.Data.csproj" />
-    <ProjectReference Include="..\ECUsuite.ECU\ECUsuite.ECU.csproj" />
+    <ProjectReference Include="..\ECUsuite.Base\ECUsuite.ECU.Base.csproj" />
+    <ProjectReference Include="..\ECUsuite.Data\ECUsuite.Tools.csproj" />
     <ProjectReference Include="..\ECUsute.MapEditor\ECUsuite.MapEditor.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Icons\BoschPD.png" />
+    <Resource Include="Icons\car-engine.png" />
+    <Resource Include="Icons\EDC15.png" />
+    <Resource Include="Icons\FolderClosed.png" />
+    <Resource Include="Icons\FolderOpened.png" />
+    <Resource Include="Icons\fuel.png" />
+    <Resource Include="Icons\NewDocument.png" />
+    <Resource Include="Icons\OpenProjectFolder.png" />
+    <Resource Include="Icons\Save.png" />
+    <Resource Include="Icons\SaveAll.png" />
+    <Resource Include="Icons\SaveAndClose.png" />
+    <Resource Include="Icons\SaveAs.png" />
+    <Resource Include="Icons\SaveFileDialog.png" />
+    <Resource Include="Icons\SaveTable.png" />
+    <Resource Include="Icons\speedometer.png" />
+    <Resource Include="Icons\stacked.png" />
+    <Resource Include="Icons\turbo.png" />
   </ItemGroup>
 
 </Project>

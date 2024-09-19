@@ -1,0 +1,137 @@
+<mxfile host="Electron" modified="2024-08-31T16:52:14.599Z" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/22.0.3 Chrome/114.0.5735.289 Electron/25.8.4 Safari/537.36" etag="NRRK1QJvmK6NhtXeppS_" version="22.0.3" type="device" pages="3">
+  <diagram id="S6uR1U7MCfiLSsjKC0P6" name="Seite-2">
+    <mxGraphModel dx="1218" dy="1166" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="btAPio_tikpH2ObTW7P7-1" value="ECU_DATA" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="1" vertex="1">
+          <mxGeometry x="400" y="200" width="120" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="btAPio_tikpH2ObTW7P7-6" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="btAPio_tikpH2ObTW7P7-3" target="btAPio_tikpH2ObTW7P7-1" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="btAPio_tikpH2ObTW7P7-3" value="Editor" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="240" y="320" width="120" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="btAPio_tikpH2ObTW7P7-7" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=1;entryDx=0;entryDy=0;exitX=0.5;exitY=0;exitDx=0;exitDy=0;" parent="1" source="btAPio_tikpH2ObTW7P7-4" target="btAPio_tikpH2ObTW7P7-1" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="btAPio_tikpH2ObTW7P7-4" value="Editor" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="400" y="320" width="120" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="btAPio_tikpH2ObTW7P7-8" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="btAPio_tikpH2ObTW7P7-5" target="btAPio_tikpH2ObTW7P7-1" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="btAPio_tikpH2ObTW7P7-5" value="Editor" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="560" y="320" width="120" height="40" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram name="MapViewerEx" id="z12ftCHAogGw1NcJ_euj">
+    <mxGraphModel dx="1218" dy="1173" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="jBctQUglrVQ6Z1VvLJCq-1" value="tabdet_onSymbolSave" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" parent="1" vertex="1">
+          <mxGeometry x="320" y="200" width="240" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="jBctQUglrVQ6Z1VvLJCq-2" value="tabdet_onSymbolRead" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" parent="1" vertex="1">
+          <mxGeometry x="320" y="240" width="240" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="jBctQUglrVQ6Z1VvLJCq-3" value="StartTableViewer" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="40" y="360" width="120" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="jBctQUglrVQ6Z1VvLJCq-4" value="tabdet_onClose" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" parent="1" vertex="1">
+          <mxGeometry x="320" y="280" width="240" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="jBctQUglrVQ6Z1VvLJCq-5" value="tabdet_onAxisEditorRequested" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" parent="1" vertex="1">
+          <mxGeometry x="320" y="320" width="240" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="jBctQUglrVQ6Z1VvLJCq-6" value="tabdet_onSliderMove" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" parent="1" vertex="1">
+          <mxGeometry x="320" y="360" width="240" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="jBctQUglrVQ6Z1VvLJCq-7" value="tabdet_onSplitterMoved" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" parent="1" vertex="1">
+          <mxGeometry x="320" y="400" width="240" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="jBctQUglrVQ6Z1VvLJCq-8" value="tabdet_onSelectionChanged" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" parent="1" vertex="1">
+          <mxGeometry x="320" y="440" width="240" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="jBctQUglrVQ6Z1VvLJCq-9" value="tabdet_onSurfaceGraphViewChangedEx" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" parent="1" vertex="1">
+          <mxGeometry x="320" y="480" width="240" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="jBctQUglrVQ6Z1VvLJCq-10" value="tabdet_onAxisLock" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" parent="1" vertex="1">
+          <mxGeometry x="320" y="520" width="240" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="jBctQUglrVQ6Z1VvLJCq-11" value="tabdet_onViewTypeChanged" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" parent="1" vertex="1">
+          <mxGeometry x="320" y="560" width="240" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="jBctQUglrVQ6Z1VvLJCq-12" value="isSymbolDisplaySameAddress" style="text;whiteSpace=wrap;" parent="1" vertex="1">
+          <mxGeometry x="320" y="640" width="200" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="jBctQUglrVQ6Z1VvLJCq-13" value="StartCompareMapViewer" style="text;whiteSpace=wrap;" parent="1" vertex="1">
+          <mxGeometry x="320" y="680" width="170" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="jBctQUglrVQ6Z1VvLJCq-14" value="StartCompareDifferenceViewer" style="text;whiteSpace=wrap;" parent="1" vertex="1">
+          <mxGeometry x="320" y="720" width="200" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="jBctQUglrVQ6Z1VvLJCq-15" value="UpdateViewer" style="text;whiteSpace=wrap;" parent="1" vertex="1">
+          <mxGeometry x="40" y="560" width="110" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="jBctQUglrVQ6Z1VvLJCq-16" value="UpdateOpenViewers" style="text;whiteSpace=wrap;" parent="1" vertex="1">
+          <mxGeometry x="40" y="600" width="140" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="jBctQUglrVQ6Z1VvLJCq-17" value="SetMapSliderPosition" style="text;whiteSpace=wrap;" parent="1" vertex="1">
+          <mxGeometry x="40" y="680" width="150" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="jBctQUglrVQ6Z1VvLJCq-18" value="SetMapScale" style="text;whiteSpace=wrap;" parent="1" vertex="1">
+          <mxGeometry x="40" y="720" width="100" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="jBctQUglrVQ6Z1VvLJCq-19" value="FindMaxTableValue" style="text;whiteSpace=wrap;" parent="1" vertex="1">
+          <mxGeometry x="40" y="760" width="140" height="40" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="c5DE2gdS4sMzqL7mZi9r" name="MVE_grid">
+    <mxGraphModel dx="1218" dy="1173" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="OZgn_vjxYWrk4BxiZqjj-2" value="gridView1_SelectionChanged_1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="480" y="160" width="240" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="OZgn_vjxYWrk4BxiZqjj-3" value="gridView1_ValidatingEditor" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="480" y="200" width="240" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="OZgn_vjxYWrk4BxiZqjj-4" value="gridView1_CustomDrawRowIndicator" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="480" y="240" width="240" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="1KYYFLsl5_8EyLBdQh-k-1" value="gridView1_CellValueChanged" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="480" y="280" width="240" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="1KYYFLsl5_8EyLBdQh-k-2" value="gridView1_KeyDown" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="480" y="320" width="240" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="1KYYFLsl5_8EyLBdQh-k-3" value="gridView1_CellValueChanging" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="480" y="360" width="240" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="1KYYFLsl5_8EyLBdQh-k-4" value="gridView1_CustomDrawCell" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="480" y="400" width="240" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="1KYYFLsl5_8EyLBdQh-k-5" value="gridView1_ShownEditor" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="480" y="440" width="240" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="1KYYFLsl5_8EyLBdQh-k-6" value="gridView1_RowUpdated" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="480" y="480" width="240" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="1KYYFLsl5_8EyLBdQh-k-8" value="gridView1_HiddenEditor" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="480" y="520" width="240" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="1KYYFLsl5_8EyLBdQh-k-9" value="gridView1_CustomDrawColumnHeader" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="480" y="560" width="240" height="40" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

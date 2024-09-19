@@ -6,10 +6,9 @@ using System.Data;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using ECUsuite.Data;
 using Syncfusion.PMML;
-using static System.Runtime.InteropServices.JavaScript.JSType;
-
+using ECUsuite.Tools;
+using ECUsuite.ECU.Base;
 
 namespace ECUsuite.MapEditor
 {
@@ -91,8 +90,9 @@ namespace ECUsuite.MapEditor
                 //loop through x axis
                 for (int j = 0; j < symbol.Y_axis_length; j++)
                 {
-                    int rawContent = (data[mapPos] << 8) + data[mapPos + 1];
-                    mapData[j, i] = Math.Round(rawContent * symbol.Correction, 1);
+                    //int rawContent = (data[mapPos] << 8) + data[mapPos + 1];
+                    short rawContent = (short)((data[mapPos] << 8) | data[mapPos + 1]);
+                    mapData[j, i] = Math.Round((double)rawContent * symbol.Correction, 1);
                     mapPos += 2;
                 }
             }

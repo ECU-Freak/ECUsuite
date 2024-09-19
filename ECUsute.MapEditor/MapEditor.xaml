@@ -10,7 +10,11 @@
     <Grid>
         <syncfusion:DockingManager Name="DockManagerViewer" UseDocumentContainer="True" UseNativeFloatWindow="True" ContainerMode="TDI" >
             <ContentControl x:Name="TabTable" syncfusion:DockingManager.CanDocument="True" syncfusion:DockingManager.Header="Table" syncfusion:DockingManager.State="Document">
-                <syncfusion:SfDataGrid Name="GridData" SelectionMode="Extended" HeaderRowHeight="0"  SelectionUnit="Cell" ColumnSizer="Auto" AllowSorting="False" AllowFiltering ="False" AllowEditing="True" CurrentCellValidating="GridData_CurrentCellValidating" PreviewKeyDown="GridData_PreviewKeyDown"/>
+                <syncfusion:SfDataGrid Name="GridData" SelectionMode="Extended" HeaderRowHeight="0"  SelectionUnit="Cell" ColumnSizer="Auto" AllowSorting="False" AllowFiltering ="False" AllowEditing="True" 
+                                       CurrentCellValidating="GridData_CurrentCellValidating" 
+                                       PreviewKeyDown="GridData_PreviewKeyDown" 
+                                       CurrentCellValueChanged="GridData_CurrentCellValueChanged"
+                                       />
             </ContentControl>
             <ContentControl x:Name="Tab3D" syncfusion:DockingManager.CanDocument="True" syncfusion:DockingManager.Header="3D" syncfusion:DockingManager.State="Document">
                 <syncfusion:SfSurfaceChart Name="chart3d" EnableRotation="True" EnableZooming="True" ApplyGradientBrush="True"  Type="WireframeSurface" WireframeStroke="Black" WireframeStrokeThickness="1"/>

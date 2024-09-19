@@ -29,6 +29,7 @@ bld/
 [Oo]bj/
 [Ll]og/
 VS/
+x_ICONS_LIB/
 
 # Visual Studio cache/options directory
 .vs/

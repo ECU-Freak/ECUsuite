@@ -2,7 +2,7 @@ using System;
 using System.Reflection;
 using System.Collections;
 
-namespace ECUsuite.Data
+namespace ECUsuite.Tools
 {
 	/// <summary>
 	/// Author : Sree Krishna.S 

@@ -1,0 +1,24 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="EDC15P\EDC15PTuner.cs" />
+    <Compile Remove="EDC15P\EDC15P_EEPROM.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="EDC15P\exclude\EDC15PTuner.cs" />
+    <None Include="EDC15P\exclude\EDC15P_EEPROM.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ECUsuite.Base\ECUsuite.ECU.Base.csproj" />
+    <ProjectReference Include="..\ECUsuite.Data\ECUsuite.Tools.csproj" />
+  </ItemGroup>
+
+</Project>

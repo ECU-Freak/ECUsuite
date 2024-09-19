@@ -12,7 +12,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\ECUsuite.Data\ECUsuite.Data.csproj" />
+    <ProjectReference Include="..\ECUsuite.Base\ECUsuite.ECU.Base.csproj" />
+    <ProjectReference Include="..\ECUsuite.Data\ECUsuite.Tools.csproj" />
+    <ProjectReference Include="..\ECUsuite.ECU.Parser\ECUsuite.ECU.csproj" />
   </ItemGroup>
 
 </Project>

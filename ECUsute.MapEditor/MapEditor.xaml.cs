@@ -6,18 +6,13 @@ using System.Reflection.Emit;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Ink;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
-using ECUsuite.Data;
 using Syncfusion.UI.Xaml.Charts;
 using Syncfusion.UI.Xaml.Grid;
 using Syncfusion.Windows.Controls.Grid;
+using Syncfusion.Windows.Tools.Controls;
+
+using ECUsuite.
 
 
 namespace ECUsuite.MapEditor
@@ -45,6 +40,37 @@ namespace ECUsuite.MapEditor
             InitializeComponent();
         }
 
+
+        public void setTools()
+        {
+
+        }
+
+        /// <summary>
+        /// set toolbar for controlling the map editor
+        /// </summary>
+        /// <param name="toolbar"></param>
+        public void setToolBar(ToolBarAdv toolbar)
+        {
+            if(toolbar.ToolBarName == "ToolBarMapEditor")
+            {
+                ((Button)toolbar.Items[0]).Click += ToolBarMapEditorBtnSave;
+                ((Button)toolbar.Items[1]).Click += ToolBarMapEditorBtnSaveAll;
+            }
+        }
+
+        private void ToolBarMapEditorBtnSave(object sender, RoutedEventArgs e)
+        {
+            if(this.IsVisible)
+            {
+                Debug.WriteLine(Symbol.Varname + "save map");
+            }
+        }
+        private void ToolBarMapEditorBtnSaveAll(object sender, RoutedEventArgs e)
+        {
+            Debug.WriteLine(Symbol.Varname + "save all map");
+        }
+
         /// <summary>
         /// show the data on the grid and on the surface, with parameters
         /// </summary>
@@ -66,6 +92,7 @@ namespace ECUsuite.MapEditor
         /// </summary>
         public void show()
         {
+            
             mapViewData.addDataRaw(Symbol, X_axisvalues, Y_axisvalues, Map_content);
 
             ShowGrid(GridData, mapViewData);
@@ -152,6 +179,8 @@ namespace ECUsuite.MapEditor
             }
         }
 
+
+
         /// <summary>
         /// if key is pressed, check if decimal
         /// </summary>
@@ -168,6 +197,12 @@ namespace ECUsuite.MapEditor
             {
                 UpdateSelectedRows(GridData, -1);
             }
+
+            if(e.Key == Key.Escape)
+            {
+                GridData.ClearSelections(false);
+            }
+
 
             // check if the keys are allowed
             var key = e.Key;
@@ -198,5 +233,8 @@ namespace ECUsuite.MapEditor
             }
         }
 
+        private void GridData_CurrentCellValueChanged(object sender, CurrentCellValueChangedEventArgs e)
+        {
+        }
     }
 }

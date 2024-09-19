@@ -15,58 +15,17 @@ using Syncfusion.Themes.MaterialDark.WPF;
 using Microsoft.Win32;
 using Syncfusion.Windows.Controls.Grid;
 using System.IO;
-using ECUsuite.ECU.EDC15;
-using ECUsuite.ECU;
 using Syncfusion.UI.Xaml.TreeGrid;
 using System.Reflection;
 using ECUsuite.MapEditor;
-using ECUsuite.Data;
 using System.Net;
+using Syncfusion.UI.Xaml.Diagram;
+
+using ECUsuite.Tools;
 
 namespace ECUsuite
 {
     public delegate void DelegateStartReleaseNotePanel(string filename, string version);
-
-    public enum GearboxType : int
-    {
-        Automatic,
-        Manual,
-        FourWheelDrive
-    }
-
-    public enum EDCFileType : int
-    {
-        EDC15P,
-        EDC15P6, // different map structure
-        EDC15V,
-        EDC15M,
-        EDC15C,
-        EDC16,
-        EDC17,  // 512Kb/2048Kb
-        MSA6,
-        MSA11,
-        MSA12,
-        MSA15,
-        Unknown
-    }
-
-    public enum EngineType : int
-    {
-        cc1200,
-        cc1400,
-        cc1600,
-        cc1900,
-        cc2500
-    }
-
-    public enum ImportFileType : int
-    {
-        XML,
-        A2L,
-        CSV,
-        AS2,
-        Damos
-    }
 
     /// <summary>
     /// Interaction logic for MainWindow.xaml
@@ -80,6 +39,9 @@ namespace ECUsuite
         #region private objects
         private AppSettings m_appSettings;
         private SolutionExplorerCtrl solutionExplorer = new SolutionExplorerCtrl();
+
+        private Tools.Tools tools = new Tools.Tools();
+
         #endregion
 
         public MainWindow()
@@ -104,9 +66,9 @@ namespace ECUsuite
             MapEditor.MapEditor mapEditor = new MapEditor.MapEditor();
 
             mapEditor.Symbol = e;
-            mapEditor.Map_content = Tools.Instance.readdatafromfile(Tools.Instance.m_currentfile, (int)e.Flash_start_address, e.Length, Tools.Instance.m_currentFileType);
-            mapEditor.X_axisvalues = GetXaxisValues(Tools.Instance.m_currentfile, Tools.Instance.m_symbols, e.Varname);
-            mapEditor.Y_axisvalues = GetYaxisValues(Tools.Instance.m_currentfile, Tools.Instance.m_symbols, e.Varname);
+            mapEditor.Map_content = tools.readdatafromfile(tools.m_currentfile, (int)e.Flash_start_address, e.Length, tools.m_currentFileType);
+            mapEditor.X_axisvalues = GetXaxisValues(tools.m_currentfile, tools.m_symbols, e.Varname);
+            mapEditor.Y_axisvalues = GetYaxisValues(tools.m_currentfile, tools.m_symbols, e.Varname);
 
             mapViewer.Content = mapEditor;
 
@@ -119,6 +81,9 @@ namespace ECUsuite
 
 
             //show data on map editor
+
+
+            mapEditor.setToolBar(ToolBar.ToolBars[1]);
             mapEditor.show();
 
         }
@@ -145,9 +110,6 @@ namespace ECUsuite
                 //btnTestFiles.Visibility = DevExpress.XtraBars.BarItemVisibility.Never;
             }
         }
-
-
-
 
         #region Menu
 
@@ -223,8 +185,8 @@ namespace ECUsuite
 
         private void CloseProject()
         {
-            Tools.Instance.m_CurrentWorkingProject = string.Empty;
-            Tools.Instance.m_currentfile = string.Empty;
+            tools.m_CurrentWorkingProject = string.Empty;
+            tools.m_currentfile = string.Empty;
             //gridControl1.DataSource = null;
             //barFilenameText.Caption = "No file";
             m_appSettings.Lastfilename = string.Empty;
@@ -253,9 +215,9 @@ namespace ECUsuite
                 try
                 {
 
-                    Tools.Instance.m_currentfile = fileName;
+                    tools.m_currentfile = fileName;
                     FileInfo fi = new FileInfo(fileName);
-                    Tools.Instance.m_currentfilelength = (int)fi.Length;
+                    tools.m_currentfilelength = (int)fi.Length;
                     try
                     {
                         fi.IsReadOnly = false;
@@ -267,13 +229,13 @@ namespace ECUsuite
                         //barReadOnly.Caption = "File is READ ONLY";
                     }
                     //this.Content = "VAGEDCSuite [ " + Path.GetFileName(Tools.Instance.m_currentfile) + " ]";
-                    Tools.Instance.m_symbols = new SymbolCollection();
-                    Tools.Instance.codeBlockList = new List<CodeBlock>();
+                    tools.m_symbols = new ECUsuite.Data.SymbolCollection();
+                    tools.codeBlockList = new List<CodeBlock>();
                     //barFilenameText.Caption = Path.GetFileName(fileName);
 
-                    Tools.Instance.m_symbols = DetectMaps(Tools.Instance.m_currentfile, out Tools.Instance.codeBlockList, out Tools.Instance.AxisList, showMessage, true);
+                    tools.m_symbols = DetectMaps(tools.m_currentfile, out tools.codeBlockList, out tools.AxisList, showMessage, true);
 
-                    solutionExplorer.SetSymbols(Tools.Instance.m_symbols);
+                    solutionExplorer.SetSymbols(tools.m_symbols);
 
                     //gridControl1.DataSource = null;
                     //Application.DoEvents();
@@ -289,7 +251,7 @@ namespace ECUsuite
                     {
 
                     }
-                    m_appSettings.Lastfilename = Tools.Instance.m_currentfile;
+                    m_appSettings.Lastfilename = tools.m_currentfile;
                     VerifyChecksum(fileName, !m_appSettings.AutoChecksum, false);
 
                     //TryToLoadAdditionalSymbols(fileName, ImportFileType.XML, Tools.Instance.m_symbols, true);
@@ -306,7 +268,7 @@ namespace ECUsuite
 
         }
 
-        private bool MapsWithNameMissing(string varName, SymbolCollection newSymbols)
+        private bool MapsWithNameMissing(string varName, ECUsuite.Data.SymbolCollection newSymbols)
         {
             foreach (SymbolHelper sh in newSymbols)
             {
@@ -315,7 +277,7 @@ namespace ECUsuite
             return true;
         }
 
-        private int GetMapCount(string varName, SymbolCollection newSymbols)
+        private int GetMapCount(string varName, ECUsuite.Data.SymbolCollection newSymbols)
         {
             int mapCount = 0;
             foreach (SymbolHelper sh in newSymbols)
@@ -326,12 +288,12 @@ namespace ECUsuite
         }
 
 
-        private SymbolCollection DetectMaps(string filename, out List<CodeBlock> newCodeBlocks, out List<AxisHelper> newAxisHelpers, bool showMessage, bool isPrimaryFile)
+        private ECUsuite.Data.SymbolCollection DetectMaps(string filename, out List<CodeBlock> newCodeBlocks, out List<AxisHelper> newAxisHelpers, bool showMessage, bool isPrimaryFile)
         {
-            IEDCFileParser parser = Tools.Instance.GetParserForFile(filename, isPrimaryFile);
+            IEDCFileParser parser = tools.GetParserForFile(filename, isPrimaryFile);
             newCodeBlocks = new List<CodeBlock>();
             newAxisHelpers = new List<AxisHelper>();
-            SymbolCollection newSymbols = new SymbolCollection();
+            ECUsuite.Data.SymbolCollection newSymbols = new ECUsuite.Data.SymbolCollection();
 
             if (parser != null)
             {
@@ -356,8 +318,8 @@ namespace ECUsuite
                 if (isPrimaryFile)
                 {
                     string partNo = parser.ExtractPartnumber(allBytes);
-                    partNo = Tools.Instance.StripNonAscii(partNo);
-                    softwareNumber = Tools.Instance.StripNonAscii(softwareNumber);
+                    partNo = tools.StripNonAscii(partNo);
+                    softwareNumber = tools.StripNonAscii(softwareNumber);
                     //barPartnumber.Caption = partNo + " " + softwareNumber;
                     //barAdditionalInfo.Caption = info.PartNumber + " " + info.CarMake + " " + info.EcuType + " " + parser.ExtractInfo(allBytes);
                 }
@@ -374,6 +336,9 @@ namespace ECUsuite
                     sh.Description = strans.TranslateSymbolToHelpText(sh.Varname);
                 }*/
                 // check for must have maps... if there are maps missing, report it
+
+
+                /*
                 if (showMessage && (parser is EDC15PFileParser || parser is EDC15P6FileParser))
                 {
                     string _message = string.Empty;
@@ -399,6 +364,9 @@ namespace ECUsuite
                         WinInfoBox infobx = new WinInfoBox(_message);
                     }
                 }
+
+                */
+
                 if (isPrimaryFile)
                 {
                     //barSymCount.Caption = newSymbols.Count.ToString() + " symbols";
@@ -414,9 +382,9 @@ namespace ECUsuite
                     //btnActivateSmokeLimiters.Enabled = false;
                     try
                     {
-                        if (Tools.Instance.codeBlockList.Count > 0)
+                        if (tools.codeBlockList.Count > 0)
                         {
-                            if ((GetMapCount("Smoke limiter", newSymbols) / Tools.Instance.codeBlockList.Count) == 1)
+                            if ((GetMapCount("Smoke limiter", newSymbols) / tools.codeBlockList.Count) == 1)
                             {
                                 //btnActivateSmokeLimiters.Enabled = true;
                             }
@@ -444,7 +412,7 @@ namespace ECUsuite
             ChecksumResultDetails result = new ChecksumResultDetails();
             if (m_appSettings.AutoChecksum)
             {
-                result = Tools.Instance.UpdateChecksum(filename, false);
+                result = tools.UpdateChecksum(filename, false);
                 if (showInfo)
                 {
                     if (result.CalculationOk)
@@ -468,7 +436,7 @@ namespace ECUsuite
             }
             else
             {
-                result = Tools.Instance.UpdateChecksum(filename, true);
+                result = tools.UpdateChecksum(filename, true);
                 if (!result.CalculationOk)
                 {
                     if (showQuestion && result.TypeResult != ChecksumType.Unknown)
@@ -520,15 +488,9 @@ namespace ECUsuite
             //Application.DoEvents();
         }
 
-        private void SolutionExplorer_Loaded(object sender, RoutedEventArgs e)
-        {
-
-        }
-
-
         #region Function to get symbol parameters 
         //todo: move to symbol class
-        private int GetSymbolWidth(SymbolCollection curSymbolCollection, string symbolname)
+        private int GetSymbolWidth(ECUsuite.Data.SymbolCollection curSymbolCollection, string symbolname)
         {
             foreach (SymbolHelper sh in curSymbolCollection)
             {
@@ -540,7 +502,7 @@ namespace ECUsuite
             return 0;
         }
 
-        private int GetSymbolHeight(SymbolCollection curSymbolCollection, string symbolname)
+        private int GetSymbolHeight(ECUsuite.Data.SymbolCollection curSymbolCollection, string symbolname)
         {
             foreach (SymbolHelper sh in curSymbolCollection)
             {
@@ -555,7 +517,7 @@ namespace ECUsuite
 
         #region Functions to get axis values
         //todo: move to some class
-        private int[] GetYaxisValues(string filename, SymbolCollection curSymbols, string symbolname)
+        private int[] GetYaxisValues(string filename, ECUsuite.Data.SymbolCollection curSymbols, string symbolname)
         {
             int xlen = GetSymbolHeight(curSymbols, symbolname);
             int xaddress = GetXAxisAddress(curSymbols, symbolname);
@@ -563,12 +525,12 @@ namespace ECUsuite
             retval.Initialize();
             if (xaddress > 0)
             {
-                retval = Tools.Instance.readdatafromfileasint(filename, xaddress, xlen, Tools.Instance.m_currentFileType);
+                retval = tools.readdatafromfileasint(filename, xaddress, xlen, tools.m_currentFileType);
             }
             return retval;
         }
 
-        private int GetXAxisAddress(SymbolCollection curSymbols, string symbolname)
+        private int GetXAxisAddress(ECUsuite.Data.SymbolCollection curSymbols, string symbolname)
         {
             foreach (SymbolHelper sh in curSymbols)
             {
@@ -580,7 +542,7 @@ namespace ECUsuite
             return 0;
         }
 
-        private int GetYAxisAddress(SymbolCollection curSymbols, string symbolname)
+        private int GetYAxisAddress(ECUsuite.Data.SymbolCollection curSymbols, string symbolname)
         {
             foreach (SymbolHelper sh in curSymbols)
             {
@@ -591,7 +553,7 @@ namespace ECUsuite
             }
             return 0;
         }
-        private int[] GetXaxisValues(string filename, SymbolCollection curSymbols, string symbolname)
+        private int[] GetXaxisValues(string filename, ECUsuite.Data.SymbolCollection curSymbols, string symbolname)
         {
 
             int ylen = GetSymbolWidth(curSymbols, symbolname);
@@ -600,11 +562,21 @@ namespace ECUsuite
             retval.Initialize();
             if (yaddress > 0)
             {
-                retval = Tools.Instance.readdatafromfileasint(filename, yaddress, ylen, Tools.Instance.m_currentFileType);
+                retval = tools.readdatafromfileasint(filename, yaddress, ylen, tools.m_currentFileType);
             }
             return retval;
 
         }
         #endregion
+
+        private void ToolBarMapEditorBtnSaveAll_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void ToolBarMapEditorBtnSave_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
     }
 }

@@ -23,17 +23,17 @@
             <syncfusion:MenuItemAdv Header="File" >
                 <syncfusion:MenuItemAdv Header="New">
                     <syncfusion:MenuItemAdv.Icon>
-                        <Image Source="D:\Hobby_Stuff\ECU_tuning\ECUsutie_V2\ECUsuite\Visual Studio 2022 Image Library\images\NewDocument.png" Width="15" Height="15" />
+                        <Image Source="ICONS\NewDocument.png" Width="15" Height="15" />
                     </syncfusion:MenuItemAdv.Icon>
                 </syncfusion:MenuItemAdv>
                 <syncfusion:MenuItemAdv Header="Open" Click="MenuFileOpen_Click">
                     <syncfusion:MenuItemAdv.Icon>
-                        <Image Source="pack://application:,,,/ICONS/VS/OpenFile.png" Width="15" Height="15" />
+                        <Image Source="ICONS/OpenProjectFolder.png" Width="15" Height="15" />
                     </syncfusion:MenuItemAdv.Icon>
                 </syncfusion:MenuItemAdv>
                 <syncfusion:MenuItemAdv Header="Save" Click="MenuFileSave_Click">
                     <syncfusion:MenuItemAdv.Icon>
-                        <Image Source="D:\Hobby_Stuff\ECU_tuning\ECUsutie_V2\ECUsuite\Visual Studio 2022 Image Library\images\Save.png" Width="15" Height="15" />
+                        <Image Source="ICONS/Save.png" Width="15" Height="15" />
                     </syncfusion:MenuItemAdv.Icon>
                 </syncfusion:MenuItemAdv>
                 <syncfusion:MenuItemAdv Header="Close">
@@ -71,7 +71,7 @@
         </syncfusion:MenuAdv>
 
         <StatusBar Height="30" VerticalAlignment="Bottom"/>
-        <syncfusion:DockingManager UseDocumentContainer="True" UseNativeFloatWindow="True" Name="DockingManager1" RenderTransformOrigin="0.5,0.5" ContainerMode="TDI" Grid.IsSharedSizeScope="True" FloatingWindowSnapDistance="1" Margin="0,62,0,35">
+        <syncfusion:DockingManager UseDocumentContainer="True" DocumentCloseButtonType="Individual" UseNativeFloatWindow="True" Name="DockingManager1" RenderTransformOrigin="0.5,0.5" ContainerMode="TDI" Grid.IsSharedSizeScope="True" FloatingWindowSnapDistance="1" Margin="0,60,0,35">
             <ContentControl x:Name="SolutionExplorer" 
                     syncfusion:DockingManager.SideInDockedMode="Right"
                     syncfusion:DockingManager.DesiredWidthInDockedMode="500"
@@ -85,11 +85,35 @@
                 syncfusion:DockingManager.Header="Output"/>
 
         </syncfusion:DockingManager>
-        <syncfusion:ToolBarAdv Height="30" Margin="0,25,0,0" VerticalAlignment="Top" Grid.ColumnSpan="2">
-            <Button Content="Cut" Height="26" Width="30"/>
-            <Button Content="Copy" Height="26" Width="30"/>
-            <Button Content="Paste" Height="26" Width="40"/>
-        </syncfusion:ToolBarAdv>
 
+
+        <syncfusion:ToolBarTrayAdv x:Name="ToolBar" Height="30" Margin="0,25,0,0" VerticalAlignment="Top" >
+
+            <syncfusion:ToolBarAdv ToolBarName="file" OverflowButtonVisibility="Hidden">
+                <Button x:Name="TbvBtnFileNew" >
+                    <Image Source="ICONS\NewDocument.png" Width="20" Height="20"/>
+                </Button>
+                <Button>
+                    <Image Source="ICONS\OpenProjectFolder.png" Width="18" Height="18"/>
+                </Button>
+                <Button >
+                    <Image Source="ICONS\Save.png" Width="16" Height="16"/>
+                </Button>
+                <Button>
+                    <Image Source="ICONS\SaveAll.png" Width="16" Height="16"/>
+                </Button>
+            </syncfusion:ToolBarAdv>
+
+
+            <syncfusion:ToolBarAdv ToolBarName="ToolBarMapEditor" OverflowButtonVisibility="Hidden">
+                <Button x:Name="ToolBarMapEditorBtnSave" Click="ToolBarMapEditorBtnSave_Click">
+                    <Image Source="ICONS\Save.png" Width="16" Height="16"/>
+                </Button>
+                <Button x:Name="ToolBarMapEditorBtnSaveAll" Click="ToolBarMapEditorBtnSaveAll_Click">
+                    <Image Source="ICONS\SaveAll.png" Width="16" Height="16"/>
+                </Button>
+            </syncfusion:ToolBarAdv>
+
+        </syncfusion:ToolBarTrayAdv>
     </Grid>
 </Window>
