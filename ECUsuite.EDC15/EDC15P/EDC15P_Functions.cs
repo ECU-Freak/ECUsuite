@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ECUsuite.ECU.Base
+namespace ECUsuite.ECU.EDC15.EDC15P
 {
-    internal class ECUparser
+    public class EDC15P_Functions
     {
     }
 }

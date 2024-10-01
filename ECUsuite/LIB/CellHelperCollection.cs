@@ -2,9 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.ComponentModel;
-using ECUsuite.Data;
+using ECUsuite.Toolbox;
 
-namespace ECUsuite
+namespace ECUsuite.ECU.Base
 {
     public class CellHelperCollection : SortableCollectionBase, ICustomTypeDescriptor
     {

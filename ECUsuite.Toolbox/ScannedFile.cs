@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 
 
-namespace ECUsuite.Tools
+namespace ECUsuite.Toolbox
 {
     class ScannedFile
     {

@@ -15,13 +15,13 @@ using System.Linq;
 using System.Text;
 using System.IO;
 using ECUsuite.ECU.Base;
+using ECUsuite.Toolbox;
 
-namespace ECUsuite.ECU.EDC15
+namespace ECUsuite.ECU.Checksum
 {
     public class EDC15VM_checksum
     {
-        private Tools.Tools tools = new Tools.Tools();
-
+        private Tools tools = new Tools();
 
         public void DumpChecksumLocations(string info, byte[] allBytes)
         {
@@ -47,25 +47,25 @@ namespace ECUsuite.ECU.EDC15
             }
         }
 
-        private ushort chk_match = 0;
+        private UInt16 chk_match = 0;
 
-        public ushort ChecksumsMatch
+        public UInt16 ChecksumsMatch
         {
             get { return chk_match; }
             set { chk_match = value; }
         }
 
 
-        private ushort chk_found = 0;
+        private UInt16 chk_found = 0;
 
-        public ushort ChecksumsFound
+        public UInt16 ChecksumsFound
         {
             get { return chk_found; }
             set { chk_found = value; }
         }
-        private ushort chk_fixed = 0;
+        private UInt16 chk_fixed = 0;
 
-        public ushort ChecksumsIncorrect
+        public UInt16 ChecksumsIncorrect
         {
             get { return chk_fixed; }
             set { chk_fixed = value; }
@@ -81,7 +81,7 @@ namespace ECUsuite.ECU.EDC15
         {
             if (debugInfo) Console.WriteLine(remark);//+ " " + allBytes[0x5BFFA].ToString("X2") + " " + allBytes[0x5BFFB].ToString("X2") + " " + allBytes[0x5BFFC].ToString("X2") + " " + allBytes[0x5BFFD].ToString("X2") + " " + allBytes[0x5BFFE].ToString("X2") + " " + allBytes[0x5BFFF].ToString("X2"));
         }
-        public ChecksumResult tdi41_checksum_search(byte[] file_buffer, uint file_size, bool debug)
+        public ChecksumResult tdi41_checksum_search(byte[] file_buffer, UInt32 file_size, bool debug)
         {
             if (file_buffer.Length == 0x40000) return tdi41_checksum_search_256kb(file_buffer, file_size, debug);
             else if (file_buffer.Length == 0x80000) return tdi41_checksum_search_512kb(file_buffer, file_size, debug);
@@ -94,12 +94,12 @@ namespace ECUsuite.ECU.EDC15
         //0x014000
         //0x038B80
         //0x040000
-        private ChecksumResult tdi41_checksum_search_256kb(byte[] file_buffer, uint file_size, bool debug)
+        private ChecksumResult tdi41_checksum_search_256kb(byte[] file_buffer, UInt32 file_size, bool debug)
         {
             bool first_pass = true;
-            uint chk_oldvalue, chk_value, chk_start_addr, chk_end_addr;
-            uint[] chk_array = new uint[5] { 0x000B80, 0x008000, 0x014000, 0x038B80, 0x040000 };
-            ushort seed_a = 0, seed_b = 0;
+            UInt32 chk_oldvalue, chk_value, chk_start_addr, chk_end_addr;
+            UInt32[] chk_array = new UInt32[5] { 0x000B80, 0x008000, 0x014000, 0x038B80, 0x040000 };
+            UInt16 seed_a = 0, seed_b = 0;
 
             chk_found = 0;
             chk_fixed = 0;
@@ -118,19 +118,19 @@ namespace ECUsuite.ECU.EDC15
 
                 //if (CheckEmpty(file_buffer, chk_start_addr, chk_end_addr)) continue;
 
-                chk_oldvalue = ((uint)file_buffer[chk_end_addr - 1] << 24)
-                             + ((uint)file_buffer[chk_end_addr - 2] << 16)
-                             + ((uint)file_buffer[chk_end_addr - 3] << 8)
-                             + file_buffer[chk_end_addr - 4];
+                chk_oldvalue = ((UInt32)file_buffer[chk_end_addr - 1] << 24)
+                             + ((UInt32)file_buffer[chk_end_addr - 2] << 16)
+                             + ((UInt32)file_buffer[chk_end_addr - 3] << 8)
+                             + (UInt32)file_buffer[chk_end_addr - 4];
 
                 chk_value = tdi41_checksum_calculate(file_buffer, chk_start_addr, chk_end_addr - 4, seed_a, seed_b);
 
                 if (chk_oldvalue != chk_value && chk_oldvalue != 0xC3C3C3C3)
                 {
                     file_buffer[chk_end_addr - 4] = Convert.ToByte(chk_value & 0x000000ff);
-                    file_buffer[chk_end_addr - 3] = Convert.ToByte(chk_value >> 8 & 0x000000ff);
-                    file_buffer[chk_end_addr - 2] = Convert.ToByte(chk_value >> 16 & 0x000000ff);
-                    file_buffer[chk_end_addr - 1] = Convert.ToByte(chk_value >> 24 & 0x000000ff);
+                    file_buffer[chk_end_addr - 3] = Convert.ToByte((chk_value >> 8) & 0x000000ff);
+                    file_buffer[chk_end_addr - 2] = Convert.ToByte((chk_value >> 16) & 0x000000ff);
+                    file_buffer[chk_end_addr - 1] = Convert.ToByte((chk_value >> 24) & 0x000000ff);
                     Console.WriteLine("Checksum at address " + chk_end_addr.ToString("X8") + " failed");
                     chk_fixed++;
                 }
@@ -146,11 +146,11 @@ namespace ECUsuite.ECU.EDC15
             return ChecksumResult.ChecksumFail;
         }
 
-        private ChecksumResult tdi41_checksum_search_1024kb(byte[] file_buffer, uint file_size, bool debug)
+        private ChecksumResult tdi41_checksum_search_1024kb(byte[] file_buffer, UInt32 file_size, bool debug)
         {
             bool first_pass = false;
-            uint chk_oldvalue, chk_value, chk_start_addr, chk_end_addr;
-            uint[] chk_array = new uint[34] {
+            UInt32 chk_oldvalue, chk_value, chk_start_addr, chk_end_addr;
+            UInt32[] chk_array = new UInt32[34] {
                 0x4000,
                 0x4B80, // << IGNORE
                 0x10000,
@@ -186,7 +186,7 @@ namespace ECUsuite.ECU.EDC15
                 0xF0B80,
                 0xFC000
                 };
-            ushort seed_a = 0, seed_b = 0;
+            UInt16 seed_a = 0, seed_b = 0;
 
             chk_found = 0;
             chk_fixed = 0;
@@ -205,19 +205,19 @@ namespace ECUsuite.ECU.EDC15
 
                 //if (CheckEmpty(file_buffer, chk_start_addr, chk_end_addr)) continue;
 
-                chk_oldvalue = ((uint)file_buffer[chk_end_addr - 1] << 24)
-                             + ((uint)file_buffer[chk_end_addr - 2] << 16)
-                             + ((uint)file_buffer[chk_end_addr - 3] << 8)
-                             + file_buffer[chk_end_addr - 4];
+                chk_oldvalue = ((UInt32)file_buffer[chk_end_addr - 1] << 24)
+                             + ((UInt32)file_buffer[chk_end_addr - 2] << 16)
+                             + ((UInt32)file_buffer[chk_end_addr - 3] << 8)
+                             + (UInt32)file_buffer[chk_end_addr - 4];
 
                 chk_value = tdi41_checksum_calculate(file_buffer, chk_start_addr, chk_end_addr - 4, seed_a, seed_b);
 
                 if (chk_oldvalue != chk_value && chk_oldvalue != 0xC3C3C3C3 && chk_end_addr != 0x94000)
                 {
                     file_buffer[chk_end_addr - 4] = Convert.ToByte(chk_value & 0x000000ff);
-                    file_buffer[chk_end_addr - 3] = Convert.ToByte(chk_value >> 8 & 0x000000ff);
-                    file_buffer[chk_end_addr - 2] = Convert.ToByte(chk_value >> 16 & 0x000000ff);
-                    file_buffer[chk_end_addr - 1] = Convert.ToByte(chk_value >> 24 & 0x000000ff);
+                    file_buffer[chk_end_addr - 3] = Convert.ToByte((chk_value >> 8) & 0x000000ff);
+                    file_buffer[chk_end_addr - 2] = Convert.ToByte((chk_value >> 16) & 0x000000ff);
+                    file_buffer[chk_end_addr - 1] = Convert.ToByte((chk_value >> 24) & 0x000000ff);
                     Console.WriteLine("Checksum at address " + chk_end_addr.ToString("X8") + " failed");
                     chk_fixed++;
                 }
@@ -234,12 +234,12 @@ namespace ECUsuite.ECU.EDC15
             return ChecksumResult.ChecksumFail;
         }
 
-        private ChecksumResult tdi41_checksum_search_512kb(byte[] file_buffer, uint file_size, bool debug)
+        private ChecksumResult tdi41_checksum_search_512kb(byte[] file_buffer, UInt32 file_size, bool debug)
         {
             bool first_pass = true;
-            uint chk_oldvalue, chk_value, chk_start_addr, chk_end_addr;
-            uint[] chk_array = new uint[12] { 0x10000, 0x14000, 0x4C000, 0x50000, 0x50B80, 0x5C000, 0x60000, 0x60B80, 0x6C000, 0x70000, 0x70B80, 0x7C000 };
-            ushort seed_a = 0, seed_b = 0;
+            UInt32 chk_oldvalue, chk_value, chk_start_addr, chk_end_addr;
+            UInt32[] chk_array = new UInt32[12] { 0x10000, 0x14000, 0x4C000, 0x50000, 0x50B80, 0x5C000, 0x60000, 0x60B80, 0x6C000, 0x70000, 0x70B80, 0x7C000 };
+            UInt16 seed_a = 0, seed_b = 0;
 
             chk_found = 0;
             chk_fixed = 0;
@@ -258,19 +258,19 @@ namespace ECUsuite.ECU.EDC15
 
                 //if (CheckEmpty(file_buffer, chk_start_addr, chk_end_addr)) continue;
 
-                chk_oldvalue = ((uint)file_buffer[chk_end_addr - 1] << 24)
-                             + ((uint)file_buffer[chk_end_addr - 2] << 16)
-                             + ((uint)file_buffer[chk_end_addr - 3] << 8)
-                             + file_buffer[chk_end_addr - 4];
+                chk_oldvalue = ((UInt32)file_buffer[chk_end_addr - 1] << 24)
+                             + ((UInt32)file_buffer[chk_end_addr - 2] << 16)
+                             + ((UInt32)file_buffer[chk_end_addr - 3] << 8)
+                             + (UInt32)file_buffer[chk_end_addr - 4];
 
                 chk_value = tdi41_checksum_calculate(file_buffer, chk_start_addr, chk_end_addr - 4, seed_a, seed_b);
 
                 if (chk_oldvalue != chk_value && chk_oldvalue != 0xC3C3C3C3)
                 {
                     file_buffer[chk_end_addr - 4] = Convert.ToByte(chk_value & 0x000000ff);
-                    file_buffer[chk_end_addr - 3] = Convert.ToByte(chk_value >> 8 & 0x000000ff);
-                    file_buffer[chk_end_addr - 2] = Convert.ToByte(chk_value >> 16 & 0x000000ff);
-                    file_buffer[chk_end_addr - 1] = Convert.ToByte(chk_value >> 24 & 0x000000ff);
+                    file_buffer[chk_end_addr - 3] = Convert.ToByte((chk_value >> 8) & 0x000000ff);
+                    file_buffer[chk_end_addr - 2] = Convert.ToByte((chk_value >> 16) & 0x000000ff);
+                    file_buffer[chk_end_addr - 1] = Convert.ToByte((chk_value >> 24) & 0x000000ff);
                     Console.WriteLine("Checksum at address " + chk_end_addr.ToString("X8") + " failed");
                     chk_fixed++;
                 }
@@ -286,13 +286,13 @@ namespace ECUsuite.ECU.EDC15
             return ChecksumResult.ChecksumFail;
         }
 
-        public ChecksumResult tdi41v2_checksum_search(byte[] file_buffer, uint file_size, bool debug)
+        public ChecksumResult tdi41v2_checksum_search(byte[] file_buffer, UInt32 file_size, bool debug)
         {
             bool first_pass = true;
-            uint chk_oldvalue, chk_value, chk_start_addr, chk_end_addr;
+            UInt32 chk_oldvalue, chk_value, chk_start_addr, chk_end_addr;
             //UInt32[] chk_array = new UInt32[8] { 0x10000, 0x14000, 0x4C000, 0x50000, 0x50B80, 0x58000, 0x58B80, 0x5C000, 0x60000, 0x64000, 0x68000, 0x70000, 0x70B80, 0x7C000 };
-            uint[] chk_array = new uint[8] { 0x10000, 0x14000, 0x58000, 0x58B80, 0x64000, 0x70000, 0x70B80, 0x7C000 };
-            ushort seed_a = 0, seed_b = 0;
+            UInt32[] chk_array = new UInt32[8] { 0x10000, 0x14000, 0x58000, 0x58B80, 0x64000, 0x70000, 0x70B80, 0x7C000 };
+            UInt16 seed_a = 0, seed_b = 0;
 
             chk_found = 0;
             chk_fixed = 0;
@@ -314,19 +314,19 @@ namespace ECUsuite.ECU.EDC15
 
                 if (CheckEmpty(file_buffer, chk_start_addr, chk_end_addr)) continue;
 
-                chk_oldvalue = ((uint)file_buffer[chk_end_addr - 1] << 24)
-                             + ((uint)file_buffer[chk_end_addr - 2] << 16)
-                             + ((uint)file_buffer[chk_end_addr - 3] << 8)
-                             + file_buffer[chk_end_addr - 4];
+                chk_oldvalue = ((UInt32)file_buffer[chk_end_addr - 1] << 24)
+                             + ((UInt32)file_buffer[chk_end_addr - 2] << 16)
+                             + ((UInt32)file_buffer[chk_end_addr - 3] << 8)
+                             + (UInt32)file_buffer[chk_end_addr - 4];
 
                 chk_value = tdi41_checksum_calculate(file_buffer, chk_start_addr, chk_end_addr - 4, seed_a, seed_b);
 
                 if (chk_oldvalue != chk_value && chk_oldvalue != 0xC3C3C3C3)
                 {
                     file_buffer[chk_end_addr - 4] = Convert.ToByte(chk_value & 0x000000ff);
-                    file_buffer[chk_end_addr - 3] = Convert.ToByte(chk_value >> 8 & 0x000000ff);
-                    file_buffer[chk_end_addr - 2] = Convert.ToByte(chk_value >> 16 & 0x000000ff);
-                    file_buffer[chk_end_addr - 1] = Convert.ToByte(chk_value >> 24 & 0x000000ff);
+                    file_buffer[chk_end_addr - 3] = Convert.ToByte((chk_value >> 8) & 0x000000ff);
+                    file_buffer[chk_end_addr - 2] = Convert.ToByte((chk_value >> 16) & 0x000000ff);
+                    file_buffer[chk_end_addr - 1] = Convert.ToByte((chk_value >> 24) & 0x000000ff);
                     Console.WriteLine("Checksum at address " + chk_end_addr.ToString("X8") + " failed");
                     chk_fixed++;
                 }
@@ -353,27 +353,27 @@ namespace ECUsuite.ECU.EDC15
         }
 
 
-        uint tdi41_checksum_calculate(byte[] file_buffer, uint chk_start_addr, uint chk_end_addr, ushort seed_a, ushort seed_b)
+        UInt32 tdi41_checksum_calculate(byte[] file_buffer, UInt32 chk_start_addr, UInt32 chk_end_addr, UInt16 seed_a, UInt16 seed_b)
         {
-            ushort var_1;
+            UInt16 var_1;
             byte var_2;
 
             do
             {
                 var_2 = 0;
-                seed_a ^= Convert.ToUInt16((file_buffer[chk_start_addr + 1] << 8) + file_buffer[chk_start_addr]);
+                seed_a ^= Convert.ToUInt16((((UInt16)file_buffer[chk_start_addr + 1] << 8) + (UInt16)file_buffer[chk_start_addr]));
                 chk_start_addr += 2;
 
                 if ((seed_b & 0xF) > 0)
                 {
-                    var_1 = Convert.ToUInt16(seed_a >> 16 - (seed_b & 0xF));
-                    seed_a <<= seed_b & 0xF;
+                    var_1 = Convert.ToUInt16(seed_a >> (16 - (seed_b & 0xF)));
+                    seed_a <<= (seed_b & 0xF);
                     seed_a |= var_1;
 
                     var_2 = Convert.ToByte(seed_a & 1);
                 }
 
-                seed_b -= Convert.ToUInt16((file_buffer[chk_start_addr + 1] << 8) + file_buffer[chk_start_addr]);
+                seed_b -= Convert.ToUInt16((((UInt16)file_buffer[chk_start_addr + 1] << 8) + (UInt16)file_buffer[chk_start_addr]));
                 seed_b -= var_2;
                 chk_start_addr += 2;
                 seed_b ^= seed_a;
@@ -381,16 +381,16 @@ namespace ECUsuite.ECU.EDC15
                 if (chk_start_addr == chk_end_addr)
                     break;
 
-                seed_a -= Convert.ToUInt16((file_buffer[chk_start_addr + 1] << 8) + file_buffer[chk_start_addr]);
+                seed_a -= Convert.ToUInt16((((UInt16)file_buffer[chk_start_addr + 1] << 8) + (UInt16)file_buffer[chk_start_addr]));
                 chk_start_addr += 2;
                 seed_a += 0xDAAC;
-                seed_b ^= Convert.ToUInt16((file_buffer[chk_start_addr + 1] << 8) + file_buffer[chk_start_addr]);
+                seed_b ^= Convert.ToUInt16((((UInt16)file_buffer[chk_start_addr + 1] << 8) + (UInt16)file_buffer[chk_start_addr]));
                 chk_start_addr += 2;
 
                 if ((seed_a & 0xF) > 0)
                 {
-                    var_1 = Convert.ToUInt16(seed_b << 16 - (seed_a & 0xF) & 0xffff);
-                    seed_b >>= seed_a & 0xF;
+                    var_1 = Convert.ToUInt16((seed_b << (16 - (seed_a & 0xF))) & 0xffff);
+                    seed_b >>= (seed_a & 0xF);
                     seed_b |= var_1;
                 }
             }
@@ -400,15 +400,15 @@ namespace ECUsuite.ECU.EDC15
             seed_a += 0xDAAC;
             seed_b ^= 0xDF9B;
 
-            return ((uint)seed_b << 16) + seed_a;
+            return (((UInt32)seed_b << 16) + seed_a);
         }
 
-        public ChecksumResult tdi41_2002_checksum_search(byte[] file_buffer, uint file_size, bool debug)
+        public ChecksumResult tdi41_2002_checksum_search(byte[] file_buffer, UInt32 file_size, bool debug)
         {
-            uint seed_1, seed_2;
-            ushort seed_1_msb, seed_1_lsb, seed_2_lsb, seed_2_msb;
+            UInt32 seed_1, seed_2;
+            UInt16 seed_1_msb, seed_1_lsb, seed_2_lsb, seed_2_msb;
 
-            uint chk_oldvalue, chk_value, chk_start_addr, chk_end_addr, chk_store_addr;
+            UInt32 chk_oldvalue, chk_value, chk_start_addr, chk_end_addr, chk_store_addr;
 
             chk_found = 2;
             chk_fixed = 0;
@@ -416,47 +416,47 @@ namespace ECUsuite.ECU.EDC15
 
             // Find seed 1
             seed_1 = tdi41_2002_checksum_calculate(file_buffer, 0x14000, 0x4bffe, 0x8631, 0xefcd, 0, 0, true);
-            seed_1_msb = (ushort)(seed_1 >> 16);
-            seed_1_lsb = (ushort)seed_1;
+            seed_1_msb = (UInt16)(seed_1 >> 16);
+            seed_1_lsb = (UInt16)seed_1;
 
             // Find seed 2
             seed_2 = tdi41_2002_checksum_calculate(file_buffer, 0, 0x7ffe, 0, 0, 0, 0, true);
-            seed_2_msb = (ushort)(seed_2 >> 16);
-            seed_2_lsb = (ushort)seed_2;
+            seed_2_msb = (UInt16)(seed_2 >> 16);
+            seed_2_lsb = (UInt16)seed_2;
 
             // checksum 1
-            chk_oldvalue = ((uint)file_buffer[0xffff] << 24)
-                         + ((uint)file_buffer[0xfffe] << 16)
-                         + ((uint)file_buffer[0xfffd] << 8)
-                         + file_buffer[0xfffc];
+            chk_oldvalue = ((UInt32)file_buffer[0xffff] << 24)
+                         + ((UInt32)file_buffer[0xfffe] << 16)
+                         + ((UInt32)file_buffer[0xfffd] << 8)
+                         + (UInt32)file_buffer[0xfffc];
 
             chk_value = tdi41_2002_checksum_calculate(file_buffer, 0x8000, 0xfffb, seed_2_lsb, seed_2_msb, 0x4531, 0x3550, false);
 
             if (chk_oldvalue != chk_value)
             {
                 file_buffer[0xfffc] = Convert.ToByte(chk_value & 0x000000ff);
-                file_buffer[0xfffd] = Convert.ToByte(chk_value >> 8 & 0x000000ff);
-                file_buffer[0xfffe] = Convert.ToByte(chk_value >> 16 & 0x000000ff);
-                file_buffer[0xffff] = Convert.ToByte(chk_value >> 24 & 0x000000ff);
+                file_buffer[0xfffd] = Convert.ToByte((chk_value >> 8) & 0x000000ff);
+                file_buffer[0xfffe] = Convert.ToByte((chk_value >> 16) & 0x000000ff);
+                file_buffer[0xffff] = Convert.ToByte((chk_value >> 24) & 0x000000ff);
 
                 chk_fixed++;
             }
             else chk_match++;
 
             // Checksum 2
-            chk_oldvalue = ((uint)file_buffer[0x13fff] << 24)
-                         + ((uint)file_buffer[0x13ffe] << 16)
-                         + ((uint)file_buffer[0x13ffd] << 8)
-                         + file_buffer[0x13ffc];
+            chk_oldvalue = ((UInt32)file_buffer[0x13fff] << 24)
+                         + ((UInt32)file_buffer[0x13ffe] << 16)
+                         + ((UInt32)file_buffer[0x13ffd] << 8)
+                         + (UInt32)file_buffer[0x13ffc];
 
             chk_value = tdi41_2002_checksum_calculate(file_buffer, 0x10000, 0x13ffb, 0, 0, 0x8631, 0xefcd, false);
 
             if (chk_oldvalue != chk_value)
             {
                 file_buffer[0x13ffc] = Convert.ToByte(chk_value & 0x000000ff);
-                file_buffer[0x13ffd] = Convert.ToByte(chk_value >> 8 & 0x000000ff);
-                file_buffer[0x13ffe] = Convert.ToByte(chk_value >> 16 & 0x000000ff);
-                file_buffer[0x13fff] = Convert.ToByte(chk_value >> 24 & 0x000000ff);
+                file_buffer[0x13ffd] = Convert.ToByte((chk_value >> 8) & 0x000000ff);
+                file_buffer[0x13ffe] = Convert.ToByte((chk_value >> 16) & 0x000000ff);
+                file_buffer[0x13fff] = Convert.ToByte((chk_value >> 24) & 0x000000ff);
 
                 chk_fixed++;
             }
@@ -466,28 +466,28 @@ namespace ECUsuite.ECU.EDC15
             chk_store_addr = 0x4fffb;
             do
             {
-                if (file_buffer[chk_store_addr + 13] == 0x56 &&
-                    file_buffer[chk_store_addr + 14] == 0x34 &&
-                    file_buffer[chk_store_addr + 15] == 0x2e &&
-                    file_buffer[chk_store_addr + 16] == 0x31)
+                if ((file_buffer[chk_store_addr + 13] == 0x56) &&
+                    (file_buffer[chk_store_addr + 14] == 0x34) &&
+                    (file_buffer[chk_store_addr + 15] == 0x2e) &&
+                    (file_buffer[chk_store_addr + 16] == 0x31))
                 {
                     // Checksum
                     chk_start_addr = chk_store_addr - 0x3ffb;
                     chk_end_addr = chk_store_addr;
 
-                    chk_oldvalue = ((uint)file_buffer[chk_store_addr + 4] << 24)
-                                 + ((uint)file_buffer[chk_store_addr + 3] << 16)
-                                 + ((uint)file_buffer[chk_store_addr + 2] << 8)
-                                 + file_buffer[chk_store_addr + 1];
+                    chk_oldvalue = ((UInt32)file_buffer[chk_store_addr + 4] << 24)
+                                 + ((UInt32)file_buffer[chk_store_addr + 3] << 16)
+                                 + ((UInt32)file_buffer[chk_store_addr + 2] << 8)
+                                 + (UInt32)file_buffer[chk_store_addr + 1];
 
                     chk_value = tdi41_2002_checksum_calculate(file_buffer, chk_start_addr, chk_end_addr, seed_1_lsb, seed_1_msb, seed_1_lsb, seed_1_msb, false);
 
                     if (chk_oldvalue != chk_value)
                     {
                         file_buffer[chk_store_addr + 1] = Convert.ToByte(chk_value & 0x000000ff);
-                        file_buffer[chk_store_addr + 2] = Convert.ToByte(chk_value >> 8 & 0x000000ff);
-                        file_buffer[chk_store_addr + 3] = Convert.ToByte(chk_value >> 16 & 0x000000ff);
-                        file_buffer[chk_store_addr + 4] = Convert.ToByte(chk_value >> 24 & 0x000000ff);
+                        file_buffer[chk_store_addr + 2] = Convert.ToByte((chk_value >> 8) & 0x000000ff);
+                        file_buffer[chk_store_addr + 3] = Convert.ToByte((chk_value >> 16) & 0x000000ff);
+                        file_buffer[chk_store_addr + 4] = Convert.ToByte((chk_value >> 24) & 0x000000ff);
 
                         chk_fixed++;
                     }
@@ -500,19 +500,19 @@ namespace ECUsuite.ECU.EDC15
                     chk_end_addr = chk_store_addr + 0xb80;
 
 
-                    chk_oldvalue = ((uint)file_buffer[chk_store_addr + 2948] << 24)
-                                 + ((uint)file_buffer[chk_store_addr + 2947] << 16)
-                                 + ((uint)file_buffer[chk_store_addr + 2946] << 8)
-                                 + file_buffer[chk_store_addr + 2945];
+                    chk_oldvalue = ((UInt32)file_buffer[chk_store_addr + 2948] << 24)
+                                 + ((UInt32)file_buffer[chk_store_addr + 2947] << 16)
+                                 + ((UInt32)file_buffer[chk_store_addr + 2946] << 8)
+                                 + (UInt32)file_buffer[chk_store_addr + 2945];
 
                     chk_value = tdi41_2002_checksum_calculate(file_buffer, chk_start_addr, chk_end_addr, seed_1_lsb, seed_1_msb, seed_1_lsb, seed_1_msb, false);
 
                     if (chk_oldvalue != chk_value)
                     {
                         file_buffer[chk_store_addr + 2945] = Convert.ToByte(chk_value & 0x000000ff);
-                        file_buffer[chk_store_addr + 2946] = Convert.ToByte(chk_value >> 8 & 0x000000ff);
-                        file_buffer[chk_store_addr + 2947] = Convert.ToByte(chk_value >> 16 & 0x000000ff);
-                        file_buffer[chk_store_addr + 2948] = Convert.ToByte(chk_value >> 24 & 0x000000ff);
+                        file_buffer[chk_store_addr + 2946] = Convert.ToByte((chk_value >> 8) & 0x000000ff);
+                        file_buffer[chk_store_addr + 2947] = Convert.ToByte((chk_value >> 16) & 0x000000ff);
+                        file_buffer[chk_store_addr + 2948] = Convert.ToByte((chk_value >> 24) & 0x000000ff);
 
                         chk_fixed++;
                     }
@@ -524,19 +524,19 @@ namespace ECUsuite.ECU.EDC15
                     chk_start_addr = chk_store_addr + 0xb85;
                     chk_end_addr = chk_store_addr + 0xc000;
 
-                    chk_oldvalue = ((uint)file_buffer[chk_store_addr + 49156] << 24)
-                                 + ((uint)file_buffer[chk_store_addr + 49155] << 16)
-                                 + ((uint)file_buffer[chk_store_addr + 49154] << 8)
-                                 + file_buffer[chk_store_addr + 49153];
+                    chk_oldvalue = ((UInt32)file_buffer[chk_store_addr + 49156] << 24)
+                                 + ((UInt32)file_buffer[chk_store_addr + 49155] << 16)
+                                 + ((UInt32)file_buffer[chk_store_addr + 49154] << 8)
+                                 + (UInt32)file_buffer[chk_store_addr + 49153];
 
                     chk_value = tdi41_2002_checksum_calculate(file_buffer, chk_start_addr, chk_end_addr, seed_1_lsb, seed_1_msb, seed_1_lsb, seed_1_msb, false);
 
                     if (chk_oldvalue != chk_value)
                     {
                         file_buffer[chk_store_addr + 49153] = Convert.ToByte(chk_value & 0x000000ff);
-                        file_buffer[chk_store_addr + 49154] = Convert.ToByte(chk_value >> 8 & 0x000000ff);
-                        file_buffer[chk_store_addr + 49155] = Convert.ToByte(chk_value >> 16 & 0x000000ff);
-                        file_buffer[chk_store_addr + 49156] = Convert.ToByte(chk_value >> 24 & 0x000000ff);
+                        file_buffer[chk_store_addr + 49154] = Convert.ToByte((chk_value >> 8) & 0x000000ff);
+                        file_buffer[chk_store_addr + 49155] = Convert.ToByte((chk_value >> 16) & 0x000000ff);
+                        file_buffer[chk_store_addr + 49156] = Convert.ToByte((chk_value >> 24) & 0x000000ff);
 
                         chk_fixed++;
                     }
@@ -563,14 +563,14 @@ namespace ECUsuite.ECU.EDC15
 
 
 
-        uint tdi41_2002_checksum_calculate(byte[] file_buffer, uint chk_start_addr, uint chk_end_addr, ushort seed_a, ushort seed_b, ushort seed_c, ushort seed_d, bool first_pass)
+        UInt32 tdi41_2002_checksum_calculate(byte[] file_buffer, UInt32 chk_start_addr, UInt32 chk_end_addr, UInt16 seed_a, UInt16 seed_b, UInt16 seed_c, UInt16 seed_d, bool first_pass)
         {
-            uint count = chk_start_addr / 2;
-            uint end_count = chk_end_addr / 2;
-            uint buffer_addr = chk_start_addr;
-            uint checksum, var_6, var_7 = 0;
+            UInt32 count = chk_start_addr / 2;
+            UInt32 end_count = chk_end_addr / 2;
+            UInt32 buffer_addr = chk_start_addr;
+            UInt32 checksum, var_6, var_7 = 0;
 
-            ushort var_1 = 0, var_2 = 0, var_3, var_4, var_5;
+            UInt16 var_1 = 0, var_2 = 0, var_3, var_4, var_5;
 
             if (count != end_count)
             {
@@ -585,7 +585,7 @@ namespace ECUsuite.ECU.EDC15
 
                 do
                 {
-                    var_1 ^= Convert.ToUInt16((file_buffer[buffer_addr + 1] << 8) + file_buffer[buffer_addr]);
+                    var_1 ^= Convert.ToUInt16(((UInt16)file_buffer[buffer_addr + 1] << 8) + (UInt16)file_buffer[buffer_addr]);
                     var_3 = Convert.ToUInt16(var_2 & 0xf);
                     ++count;
                     buffer_addr += 2;
@@ -595,15 +595,15 @@ namespace ECUsuite.ECU.EDC15
                     {
                         do
                         {
-                            var_4 = (ushort)(var_1 >> 15);
-                            var_1 = (ushort)(var_1 * 2 + var_4);
+                            var_4 = (UInt16)(var_1 >> 15);
+                            var_1 = (UInt16)(((var_1 * 2) + var_4));
 
                             --var_3;
                         } while (var_3 > 0);
                     }
 
-                    var_2 -= (ushort)(var_4 + (file_buffer[buffer_addr + 1] << 8) + file_buffer[buffer_addr]);
-                    var_2 = (ushort)(var_1 ^ var_2);
+                    var_2 -= (UInt16)((var_4 + ((UInt16)file_buffer[buffer_addr + 1] << 8) + (UInt16)file_buffer[buffer_addr]));
+                    var_2 = (UInt16)(var_1 ^ var_2);
 
                     buffer_addr += 2;
                     ++count;
@@ -611,12 +611,12 @@ namespace ECUsuite.ECU.EDC15
                     if (count > end_count)
                         break;
 
-                    var_5 = (ushort)((file_buffer[buffer_addr + 1] << 8) + file_buffer[buffer_addr]);
+                    var_5 = (UInt16)(((UInt16)file_buffer[buffer_addr + 1] << 8) + (UInt16)file_buffer[buffer_addr]);
                     buffer_addr += 4;
-                    var_1 += (ushort)(0xffff - var_5 + 0xdaad);
-                    var_6 = (uint)(file_buffer[buffer_addr - 1] << 8);
-                    var_2 ^= (ushort)((ushort)var_6 + file_buffer[buffer_addr - 2]);
-                    var_4 = (ushort)(var_1 & 0xf);
+                    var_1 += (UInt16)((0xffff - var_5 + 0xdaad));
+                    var_6 = (UInt32)((UInt16)file_buffer[buffer_addr - 1] << 8);
+                    var_2 ^= (UInt16)((UInt16)var_6 + (UInt16)file_buffer[buffer_addr - 2]);
+                    var_4 = (UInt16)(var_1 & 0xf);
                     count += 2;
 
                     if ((var_1 & 0xf) > 0)
@@ -625,7 +625,7 @@ namespace ECUsuite.ECU.EDC15
                         {
                             var_6 = (var_6 | 0xffff) & var_2;
                             var_6 <<= 15;
-                            var_2 = (ushort)((var_2 >> 1) + var_6);
+                            var_2 = (UInt16)(((var_2 >> 1) + var_6));
 
                             --var_4;
                         } while (var_4 > 0);
@@ -643,25 +643,25 @@ namespace ECUsuite.ECU.EDC15
             {
                 var_5 = seed_d;
                 var_1 -= seed_c;
-                var_6 = (ushort)((seed_c | 0xffff) & 0xdaad);
-                var_1 += (ushort)(var_6 - 1);
+                var_6 = (UInt16)((seed_c | 0xffff) & 0xdaad);
+                var_1 += (UInt16)(var_6 - 1);
                 var_7 = var_7 & 0xffff;
 
-                for (count = (uint)(seed_c & 0xf); count > 0; var_5 = (ushort)(((uint)var_5 >> 15) + var_7))
+                for (count = (UInt32)(seed_c & 0xf); count > 0; var_5 = (UInt16)((((UInt32)var_5 >> 15) + var_7)))
                 {
                     --count;
                     var_7 = (var_7 | 0xffff) & var_5;
                     var_7 *= 2;
                 }
 
-                checksum = var_1 + ((var_5 ^ (uint)var_2) << 16);
+                checksum = (UInt32)(((UInt32)var_1 + (((UInt32)var_5 ^ (UInt32)var_2) << 16)));
             }
             else
             {
-                checksum = var_1 + ((uint)var_2 << 16);
+                checksum = (UInt32)(((UInt32)var_1 + ((UInt32)var_2 << 16)));
             }
 
-            return checksum;
+            return (checksum);
         }
     }
 }

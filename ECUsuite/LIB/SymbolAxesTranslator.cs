@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using ECUsuite.Data;
+using ECUsuite.ECU.Base;
 
 namespace ECUsuite
 {

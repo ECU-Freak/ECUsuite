@@ -15,15 +15,14 @@ using System.Linq;
 using System.Text;
 using System.IO;
 using ECUsuite.ECU.Base;
+using ECUsuite.Toolbox;
 
 
-namespace ECUsuite.ECU.EDC15
+namespace ECUsuite.ECU.Checksum
 {
     public class EDC15P_checksum
     {
-        private Tools.Tools tools = new Tools.Tools();
-
-
+        private Tools tools = new Tools();
 
         public void DumpChecksumLocations(string info, byte[] allBytes)
         {

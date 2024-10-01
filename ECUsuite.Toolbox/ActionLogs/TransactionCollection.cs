@@ -5,7 +5,7 @@ using System.ComponentModel;
 //using ECUsuite.ECU.Base;
 
 
-namespace ECUsuite.Tools
+namespace ECUsuite.Toolbox
 {
     public class TransactionCollection : SortableCollectionBase, ICustomTypeDescriptor
     {

@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\ECUsuite.Base\ECUsuite.ECU.Base.csproj" />
+    <ProjectReference Include="..\ECUsuite.Data\ECUsuite.Data.csproj" />
     <ProjectReference Include="..\ECUsuite.EDC15\ECUsuite.ECU.EDC15.csproj" />
   </ItemGroup>
 

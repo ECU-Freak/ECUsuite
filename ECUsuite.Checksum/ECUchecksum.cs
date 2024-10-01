@@ -1,31 +1,61 @@
-﻿using ECUsuite.ECU.Base;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using ECUsuite.ECU.Base;
+using ECUsuite.Toolbox;
 
-namespace ECUsuite.ECU
+
+namespace ECUsuite.ECU.Checksum
 {
     public class ECUchecksum
     {
-        public ChecksumResultDetails UpdateChecksum(string filename, bool verifyOnly)
+        private Tools tools = new Tools();
+
+
+        /// <summary>
+        /// reads file and calculates checksum
+        /// </summary>
+        /// <param name="filename"></param>
+        /// <param name="fileType"></param>
+        /// <param name="verifyOnly"></param>
+        /// <returns></returns>
+        public ChecksumResultDetails UpdateChecksum(string filename, EDCFileType fileType, bool verifyOnly = false)
         {
             byte[] allBytes;
             ChecksumResult res = new ChecksumResult(); ;
             ChecksumResultDetails result = new ChecksumResultDetails();
 
-            EDCFileType fileType = DetermineFileType(filename, false);
+            allBytes = File.ReadAllBytes(filename);
+
+            UpdateChecksum(filename, allBytes, fileType, verifyOnly);
+
+            if (result.CalculationOk) result.CalculationResult = ChecksumResult.ChecksumOK;
+            return result;
+        }
+
+        /// <summary>
+        /// calculates checksum from byte array
+        /// </summary>
+        /// <param name="filename"></param>
+        /// <param name="allBytes"></param>
+        /// <param name="fileType"></param>
+        /// <param name="verifyOnly"></param>
+        /// <returns></returns>
+        public ChecksumResultDetails UpdateChecksum(string filename, byte[] allBytes, EDCFileType fileType, bool verifyOnly = false)
+        {
+            ChecksumResult res = new ChecksumResult(); ;
+            ChecksumResultDetails result = new ChecksumResultDetails();
+
             switch (fileType)
             {
                 case EDCFileType.EDC15P:
                 case EDCFileType.EDC15P6:
-                    allBytes = File.ReadAllBytes(filename);
                     res = CalculateEDC15PChecksum(filename, allBytes, verifyOnly, out result);
                     break;
                 case EDCFileType.EDC15V:
                     // EDC15VM+ is similar to EDC15P
-                    allBytes = File.ReadAllBytes(filename);
                     res = CalculateEDC15VMChecksum(filename, allBytes, verifyOnly, out result);
                     break;
                 case EDCFileType.EDC15C:
@@ -81,6 +111,7 @@ namespace ECUsuite.ECU
             return result;
         }
 
+
         private ChecksumResult CalculateEDC15PChecksum(string filename, byte[] allBytes, bool verifyOnly, out ChecksumResultDetails result)
         {
             ChecksumResult res = new ChecksumResult();
@@ -105,7 +136,7 @@ namespace ECUsuite.ECU
             }
 
             //allBytes = reverseEndian(allBytes);
-            ECU.EDC15.EDC15P_checksum chks = new ECU.EDC15.EDC15P_checksum();
+            EDC15P_checksum chks = new EDC15P_checksum();
             if (result.TypeResult == ChecksumType.VAG_EDC15P_V41)
             {
                 res = chks.tdi41_checksum_search(allBytes, (uint)allBytes.Length, false);
@@ -136,7 +167,7 @@ namespace ECUsuite.ECU
             else if (res == ChecksumResult.ChecksumTypeError)
             {
                 result.TypeResult = ChecksumType.VAG_EDC15P_V41_2002;
-                ECU.EDC15.EDC15P_checksum chks2002 = new ECU.EDC15.EDC15P_checksum();
+                EDC15P_checksum chks2002 = new EDC15P_checksum();
                 allBytes = File.ReadAllBytes(filename);
 
                 //chks2002.DumpChecksumLocations("V41 2002", allBytes); // for debug info only
@@ -193,7 +224,7 @@ namespace ECUsuite.ECU
                 }
             }
             //allBytes = reverseEndian(allBytes);
-            ECU.EDC15.EDC15VM_checksum chks = new ECU.EDC15.EDC15VM_checksum();
+            EDC15VM_checksum chks = new EDC15VM_checksum();
             if (result.TypeResult == ChecksumType.VAG_EDC15VM_V41)
             {
                 res = chks.tdi41_checksum_search(allBytes, (uint)allBytes.Length, false);
@@ -224,7 +255,7 @@ namespace ECUsuite.ECU
             else if (res == ChecksumResult.ChecksumTypeError)
             {
                 result.TypeResult = ChecksumType.VAG_EDC15VM_V41_2002;
-                ECU.EDC15.EDC15VM_checksum chks2002 = new ECU.EDC15.EDC15VM_checksum();
+                EDC15VM_checksum chks2002 = new EDC15VM_checksum();
                 allBytes = File.ReadAllBytes(filename);
                 ChecksumResult res2002 = chks2002.tdi41_2002_checksum_search(allBytes, (uint)allBytes.Length, false);
                 result.NumberChecksumsTotal = chks2002.ChecksumsFound;

@@ -11,9 +11,9 @@ using Syncfusion.UI.Xaml.Charts;
 using Syncfusion.UI.Xaml.Grid;
 using Syncfusion.Windows.Controls.Grid;
 using Syncfusion.Windows.Tools.Controls;
-
-using ECUsuite.
-
+using ECUsuite.ECU.Base;
+using ECUsuite.Data;
+using System.Xml.Linq;
 
 namespace ECUsuite.MapEditor
 {
@@ -34,16 +34,16 @@ namespace ECUsuite.MapEditor
         public int[]        Y_axisvalues    { get; set; } = new int[0];
 
         private MapViewData mapViewData = new MapViewData();
+        private EcuData ecuData { get; set; }
 
-        public MapEditor()
+
+        public MapEditor(SymbolHelper symbol, EcuData ecuData)
         {
+            //store reference
+            this.Symbol = symbol;
+            this.ecuData = ecuData;
+
             InitializeComponent();
-        }
-
-
-        public void setTools()
-        {
-
         }
 
         /// <summary>
@@ -59,6 +59,7 @@ namespace ECUsuite.MapEditor
             }
         }
 
+
         private void ToolBarMapEditorBtnSave(object sender, RoutedEventArgs e)
         {
             if(this.IsVisible)
@@ -66,6 +67,7 @@ namespace ECUsuite.MapEditor
                 Debug.WriteLine(Symbol.Varname + "save map");
             }
         }
+
         private void ToolBarMapEditorBtnSaveAll(object sender, RoutedEventArgs e)
         {
             Debug.WriteLine(Symbol.Varname + "save all map");
@@ -92,8 +94,12 @@ namespace ECUsuite.MapEditor
         /// </summary>
         public void show()
         {
-            
-            mapViewData.addDataRaw(Symbol, X_axisvalues, Y_axisvalues, Map_content);
+            //convert data
+            SymbolData sdata = ecuData.GetSymbolData(Symbol);
+
+            //add data to map viewer
+            mapViewData.addDataRaw(Symbol, sdata.X_axisvalues, sdata.Y_axisvalues, sdata.Map_content);
+            //mapViewData.addDataRaw(Symbol, X_axisvalues, Y_axisvalues, Map_content);
 
             ShowGrid(GridData, mapViewData);
             ShowSurface(chart3d, mapViewData);

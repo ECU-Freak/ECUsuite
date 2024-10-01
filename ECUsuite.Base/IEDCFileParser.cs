@@ -1,13 +1,40 @@
 ﻿namespace ECUsuite.ECU.Base
 {
-    abstract public class IEDCFileParser
+    public interface IecuFileParser
     {
-        abstract public SymbolCollection parseFile(string filename, out List<CodeBlock> newCodeBlocks, out List<AxisHelper> newAxisHelpers);
-        abstract public string ExtractBoschPartnumber(byte[] allBytes);
-        abstract public string ExtractSoftwareNumber(byte[] allBytes);
-        abstract public string ExtractPartnumber(byte[] allBytes);
-        abstract public string ExtractInfo(byte[] allBytes);
-        abstract public void NameKnownMaps(byte[] allBytes, SymbolCollection newSymbols, List<CodeBlock> newCodeBlocks);
-        abstract public void FindSVBL(byte[] allBytes, string filename, SymbolCollection newSymbols, List<CodeBlock> newCodeBlocks);
+        /// <summary>
+        /// Parses the ECU file
+        /// </summary>
+        /// <param name="filename"></param>
+        /// <param name="newCodeBlocks"></param>
+        /// <param name="newAxisHelpers"></param>
+        /// <returns></returns>
+        public SymbolCollection parseFile(byte[] data, out List<CodeBlock> newCodeBlocks, out List<AxisHelper> newAxisHelpers);
+
+
+        public string ExtractInfo(byte[] binaryData);
+
+        /// <summary>
+        /// extract the oem number of the ecu file
+        /// AUDI | VOLKSWAGEN | BMW
+        /// </summary>
+        /// <param name="binaryData"></param>
+        /// <returns></returns>
+        public string ExtractOemNumber(byte[] binaryData);
+
+        /// <summary>
+        /// extract the manufacturer number of the ecu file
+        /// BOSCH | CONTI | DELPHI
+        /// </summary>
+        /// <param name="binaryData"></param>
+        /// <returns></returns>
+        public string ExtractManufacturerNumber(byte[] binaryData);
+
+        /// <summary>
+        /// extract the software number of the ecu file
+        /// </summary>
+        /// <param name="binaryData"></param>
+        /// <returns></returns>
+        public string ExtractSoftwareNumber(byte[] binaryData);
     }
 }

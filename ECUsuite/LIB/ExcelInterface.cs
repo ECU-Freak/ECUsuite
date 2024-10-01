@@ -164,7 +164,7 @@ namespace ECUsuite
                 }*/
                 try
                 {
-                    wb.SaveAs(Tools.Instance.m_currentfile + "~" + mapname + ".xls", Microsoft.Office.Interop.Excel.XlFileFormat.xlWorkbookNormal, null, null, false, false, Microsoft.Office.Interop.Excel.XlSaveAsAccessMode.xlNoChange, false, null, null, null, null);
+                    //wb.SaveAs(Tools.Instance.m_currentfile + "~" + mapname + ".xls", Microsoft.Office.Interop.Excel.XlFileFormat.xlWorkbookNormal, null, null, false, false, Microsoft.Office.Interop.Excel.XlSaveAsAccessMode.xlNoChange, false, null, null, null, null);
                 }
                 catch (Exception sE)
                 {

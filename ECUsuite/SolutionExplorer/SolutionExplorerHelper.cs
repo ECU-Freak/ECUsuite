@@ -6,7 +6,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
-using ECUsuite.Data;
+using ECUsuite.ECU.Base;
 
 namespace ECUsuite
 {

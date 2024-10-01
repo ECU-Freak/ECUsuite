@@ -29,7 +29,7 @@ using System.Linq;
 using System.Text;
 using System.IO;
 
-namespace ECUsuite.Tools
+namespace ECUsuite.Toolbox
 {
     public class TransactionLog
     {

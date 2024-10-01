@@ -2,12 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Data;
-using ECUsuite.Data;
+using ECUsuite.ECU.Base;
 
-
-namespace ECUsuite
+namespace ECUsuite.ECU
 {
-    class PartnumberCollection
+    public class PartnumberCollection
     {
         DataTable dt;
         private void AddPartNumber(string part)

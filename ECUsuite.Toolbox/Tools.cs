@@ -6,7 +6,7 @@ using System.IO;
 using System.Windows;
 
 
-namespace ECUsuite.Tools
+namespace ECUsuite.Toolbox
 {
 
     public enum XDFCategories : int
@@ -48,8 +48,6 @@ namespace ECUsuite.Tools
         AS2,
         Damos
     }
-
-
 
     public class Tools
     {
@@ -352,6 +350,46 @@ namespace ECUsuite.Tools
         /// <param name="length"></param>
         /// <param name="reverseEdian"></param>
         /// <returns></returns>
+        public byte[] readdatafromfile(string filename, int address, int length, bool reverseEdian = true)
+        {
+            byte[] retval = new byte[length];
+            try
+            {
+                FileStream fsi1 = File.OpenRead(filename);
+                while (address > fsi1.Length) address -= (int)fsi1.Length;
+                BinaryReader br1 = new BinaryReader(fsi1);
+                fsi1.Position = address;
+                string temp = string.Empty;
+                for (int i = 0; i < length; i++)
+                {
+                    retval.SetValue(br1.ReadByte(), i);
+                }
+                // depends on filetype (EDC16 is not reversed)
+                if (reverseEdian)
+                {
+                    retval = reverseEndian(retval);
+                }
+                fsi1.Flush();
+                br1.Close();
+                fsi1.Close();
+                fsi1.Dispose();
+            }
+            catch (Exception E)
+            {
+                Console.WriteLine(E.Message);
+            }
+            return retval;
+        }
+
+
+        /// <summary>
+        /// on edc 16 reverseEdian has to be false
+        /// </summary>
+        /// <param name="filename"></param>
+        /// <param name="address"></param>
+        /// <param name="length"></param>
+        /// <param name="reverseEdian"></param>
+        /// <returns></returns>
         public int[] readdatafromfileasint(string filename, int address, int length, bool reverseEdian = true)
         {
             int[] retval = new int[length];
@@ -382,6 +420,49 @@ namespace ECUsuite.Tools
             br1.Close();
             fsi1.Close();
             fsi1.Dispose();
+            return retval;
+        }
+
+        /// <summary>
+        /// convert byte array to int array
+        /// </summary>
+        /// <param name="data"></param>
+        /// <param name="address"></param>
+        /// <param name="length"></param>
+        /// <param name="reverseEndian"></param>
+        /// <returns></returns>
+        public int[] convertBytesToInts(byte[] data, int address, int length, bool reverseEndian = true)
+        {
+            int[] retval = new int[length];
+
+            // Ensure the address is within the bounds of the data array
+            while (address > data.Length) address -= data.Length;
+
+            for (int i = 0; i < length; i++)
+            {
+                if (reverseEndian)
+                {
+                    int iVal = Convert.ToInt32(data[address]);
+                    iVal += Convert.ToInt32(data[address + 1]) * 256;
+                    retval.SetValue(iVal, i);
+                }
+                else
+                {
+                    int iVal = Convert.ToInt32(data[address]) * 256;
+                    iVal += Convert.ToInt32(data[address + 1]);
+                    retval.SetValue(iVal, i);
+                }
+
+                // Move the address forward by 2 bytes (since we are reading two bytes per iteration)
+                address += 2;
+
+                // Ensure we do not go out of bounds of the data array
+                if (address >= data.Length)
+                {
+                    break;
+                }
+            }
+
             return retval;
         }
 
@@ -433,43 +514,6 @@ namespace ECUsuite.Tools
             return ret;
         }
 
-        /// <summary>
-        /// on edc 16 reverseEdian has to be false
-        /// </summary>
-        /// <param name="filename"></param>
-        /// <param name="address"></param>
-        /// <param name="length"></param>
-        /// <param name="reverseEdian"></param>
-        /// <returns></returns>
-        public byte[] readdatafromfile(string filename, int address, int length, bool reverseEdian = true)
-        {
-            byte[] retval = new byte[length];
-            try
-            {
-                FileStream fsi1 = File.OpenRead(filename);
-                while (address > fsi1.Length) address -= (int)fsi1.Length;
-                BinaryReader br1 = new BinaryReader(fsi1);
-                fsi1.Position = address;
-                string temp = string.Empty;
-                for (int i = 0; i < length; i++)
-                {
-                    retval.SetValue(br1.ReadByte(), i);
-                }
-                // depends on filetype (EDC16 is not reversed)
-                if (reverseEdian)
-                {
-                    retval = reverseEndian(retval);
-                }
-                fsi1.Flush();
-                br1.Close();
-                fsi1.Close();
-                fsi1.Dispose();
-            }
-            catch (Exception E)
-            {
-                Console.WriteLine(E.Message);
-            }
-            return retval;
-        }
+
     }
 }

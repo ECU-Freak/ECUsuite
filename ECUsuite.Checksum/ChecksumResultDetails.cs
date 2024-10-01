@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace ECUsuite.ECU.Base
+namespace ECUsuite.ECU.Checksum
 {
     public enum ChecksumResult : int
     {

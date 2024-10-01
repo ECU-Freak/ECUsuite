@@ -7,13 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="EDC15P\EDC15PTuner.cs" />
-    <Compile Remove="EDC15P\EDC15P_EEPROM.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\ECUsuite.Base\ECUsuite.ECU.Base.csproj" />
-    <ProjectReference Include="..\ECUsuite.Toolbox\ECUsuite.Toolbox.csproj" />
   </ItemGroup>
 
 </Project>

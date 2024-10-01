@@ -5,25 +5,30 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.IO;
-using ECUsuite.Tools;
+using ECUsuite.Toolbox;
 using ECUsuite.ECU.Base;
+using ECUsuite.ECU;
+using System.Data.SqlTypes;
 
 namespace ECUsuite.ECU.EDC15
 {
-    public class EDC15PFileParser : IEDCFileParser
+    public class EDC15P_FileParser : IecuFileParser
     {
-        private Tools.Tools tools = new Tools.Tools();
+        private Tools tools = new Tools();
+        //private partNumberConverter pnc = new partNumberConverter();
 
-        public override string ExtractInfo(byte[] allBytes)
+
+        #region extract ecu infos
+        public string ExtractInfo(byte[] binaryData)
         {
             // assume info will be @ 0x53452 12 bytes
             string retval = string.Empty;
             try
             {
-                int partnumberAddress = tools.findSequence(allBytes, 0, new byte[5] { 0x45, 0x44, 0x43, 0x20, 0x20 }, new byte[5] { 1, 1, 1, 1, 1 });
+                int partnumberAddress = tools.findSequence(binaryData, 0, new byte[5] { 0x45, 0x44, 0x43, 0x20, 0x20 }, new byte[5] { 1, 1, 1, 1, 1 });
                 if (partnumberAddress > 0)
                 {
-                    retval = Encoding.ASCII.GetString(allBytes, partnumberAddress - 8, 12).Trim();
+                    retval = Encoding.ASCII.GetString(binaryData, partnumberAddress - 8, 12).Trim();
                 }
             }
             catch (Exception)
@@ -32,16 +37,16 @@ namespace ECUsuite.ECU.EDC15
             return retval;
         }
 
-        public override string ExtractPartnumber(byte[] allBytes)
+        public string ExtractOemNumber(byte[] binaryData)
         {
             // assume info will be @ 0x53446 12 bytes
             string retval = string.Empty;
             try
             {
-                int partnumberAddress = tools.findSequence(allBytes, 0, new byte[5] { 0x45, 0x44, 0x43, 0x20, 0x20 }, new byte[5] { 1, 1, 1, 1, 1 });
+                int partnumberAddress = tools.findSequence(binaryData, 0, new byte[5] { 0x45, 0x44, 0x43, 0x20, 0x20 }, new byte[5] { 1, 1, 1, 1, 1 });
                 if (partnumberAddress > 0)
                 {
-                    retval = Encoding.ASCII.GetString(allBytes, partnumberAddress - 20, 12).Trim();
+                    retval = Encoding.ASCII.GetString(binaryData, partnumberAddress - 20, 12).Trim();
                 }
             }
             catch (Exception)
@@ -50,15 +55,144 @@ namespace ECUsuite.ECU.EDC15
             return retval;
         }
 
-        public override string ExtractSoftwareNumber(byte[] allBytes)
+        public string ExtractManufacturerNumber(byte[] binaryData)
         {
             string retval = string.Empty;
             try
             {
-                int partnumberAddress = tools.findSequence(allBytes, 0, new byte[5] { 0x45, 0x44, 0x43, 0x20, 0x20 }, new byte[5] { 1, 1, 1, 1, 1 });
+                int partnumberAddress = tools.findSequence(binaryData, 0, new byte[5] { 0x45, 0x44, 0x43, 0x20, 0x20 }, new byte[5] { 1, 1, 1, 1, 1 });
                 if (partnumberAddress > 0)
                 {
-                    retval = Encoding.ASCII.GetString(allBytes, partnumberAddress + 5, 8).Trim();
+                    // for EDC
+                    retval = System.Text.ASCIIEncoding.ASCII.GetString(binaryData, partnumberAddress + 23, 10).Trim();
+                    if (tools.StripNonAscii(retval).Length < 10)
+                    {
+                        // try again, read from "EDC" id - 0x100 to EDC id + 100 and find 10 digit sequence
+                        retval = tools.FindDigits(binaryData, partnumberAddress - 0x100, partnumberAddress + 0x100, 10);
+                    }
+                    if (retval == string.Empty)
+                    {
+                        // try EDC16, other partnumber struct
+                        retval = tools.FindAscii(binaryData, partnumberAddress - 0x100, partnumberAddress + 0x100, 11);
+                        if (retval.StartsWith("ECM"))
+                        {
+                            retval = tools.FindAscii(binaryData, partnumberAddress - 0x100, partnumberAddress + 0x100, 19);
+                        }
+                    }
+                }
+                else
+                {
+                    partnumberAddress = tools.findSequence(binaryData, 0, new byte[4] { 0x30, 0x32, 0x38, 0x31 }, new byte[4] { 1, 1, 1, 1 });
+                    if (partnumberAddress > 0)
+                    {
+                        retval = System.Text.ASCIIEncoding.ASCII.GetString(binaryData, partnumberAddress, 10).Trim();
+                    }
+                }
+                if (retval == string.Empty)
+                {
+                    partnumberAddress = tools.findSequence(binaryData, 0, new byte[4] { 0x30, 0x32, 0x38, 0x31 }, new byte[4] { 1, 1, 1, 1 });
+                    if (partnumberAddress > 0)
+                    {
+                        retval = System.Text.ASCIIEncoding.ASCII.GetString(binaryData, partnumberAddress, 10).Trim();
+                    }
+                }
+                if (retval == string.Empty)
+                {
+                    // check 512 kB EDC17 file, audi Q7 3.0TDI
+                    partnumberAddress = tools.findSequence(binaryData, 0, new byte[7] { 0x45, 0x44, 0x43, 0x31, 0x37, 0x20, 0x20 }, new byte[7] { 1, 1, 1, 1, 1, 1, 1 });
+                    if (partnumberAddress > 0)
+                    {
+                        retval = "EDC17" + System.Text.ASCIIEncoding.ASCII.GetString(binaryData, partnumberAddress - 68, 10).Trim();
+                    }
+                    if (retval == string.Empty)
+                    {
+                        //EDC17_CPx4 = Audi
+                        //EDC17_CPx2 = BMW?
+                        partnumberAddress = tools.findSequence(binaryData, 0, Encoding.ASCII.GetBytes("EDC17_"), new byte[6] { 1, 1, 1, 1, 1, 1 });
+                        if (partnumberAddress > 0)
+                        {
+                            retval = "EDC17";
+                        }
+                    }
+
+
+                }
+                if (retval == string.Empty)
+                {
+
+                    // 1. General lookup for EDC17-string in file
+                    int pos = tools.findSequence(binaryData, 0, Encoding.ASCII.GetBytes("ME(D)/EDC17"), new byte[11] { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 });
+                    if (pos > 0)
+                    {
+                        Console.WriteLine("Found ME(D)/EDC17 in firmware!");
+                        retval = "EDC17";
+                    }
+                    // 2. BMW has 0281xxxxxx (boschnumber) written at FD00 and FE33
+                    // 3. BMW has 10373xxxxx (softwarenumber)written at 0x4001A, use this as a backup if boschnumber can't be found
+
+                    StringBuilder sb1 = new StringBuilder();
+                    StringBuilder sb2 = new StringBuilder();
+                    bool identified = true;
+                    // Check1
+                    for (int offset = 0xFD00; offset < 0xFD00 + 10; offset++)
+                    {
+                        byte b = binaryData[offset];
+                        b -= 0x30;
+                        if (b < 0 || b > 9)
+                            identified = false;
+                        sb1.Append(b.ToString());
+                    }
+                    for (int offset = 0xFE33; offset < 0xFE33 + 10; offset++)
+                    {
+                        byte b = binaryData[offset];
+                        b -= 0x30;
+                        if (b < 0 || b > 9)
+                            identified = false;
+                        sb2.Append(b.ToString());
+                    }
+                    //Console.WriteLine("sb1=" + sb1.ToString());
+                    //Console.WriteLine("sb2=" + sb2.ToString());
+                    if (identified && sb1.ToString() == sb2.ToString())
+                    {
+                        partnumberAddress = 0xFD00;
+                        retval = sb1.ToString();
+                    }
+
+                    StringBuilder sb3 = new StringBuilder();
+                    identified = true;
+                    // Check2
+                    for (int offset = 0x4001A; offset < 0x4001A + 10; offset++)
+                    {
+                        byte b = binaryData[offset];
+                        b -= 0x30;
+                        if (b < 0 || b > 9)
+                            identified = false;
+                        sb3.Append(b.ToString());
+                    }
+                    //Console.WriteLine("sb3=" + sb3.ToString());
+                    if (identified)
+                    {
+                        partnumberAddress = 0x4001A;
+                        retval = sb3.ToString();
+                    }
+                }
+            }
+            catch (Exception)
+            {
+            }
+            retval = tools.StripNonAscii(retval);
+            return retval;
+        }
+
+        public string ExtractSoftwareNumber(byte[] binaryData)
+        {
+            string retval = string.Empty;
+            try
+            {
+                int partnumberAddress = tools.findSequence(binaryData, 0, new byte[5] { 0x45, 0x44, 0x43, 0x20, 0x20 }, new byte[5] { 1, 1, 1, 1, 1 });
+                if (partnumberAddress > 0)
+                {
+                    retval = Encoding.ASCII.GetString(binaryData, partnumberAddress + 5, 8).Trim();
                     retval = retval.Replace(" ", "");
                 }
             }
@@ -67,24 +201,7 @@ namespace ECUsuite.ECU.EDC15
             }
             return retval;
         }
-
-        public override string ExtractBoschPartnumber(byte[] allBytes)
-        {
-            return tools.ExtractBoschPartnumber(allBytes);
-            string retval = string.Empty;
-            try
-            {
-                int partnumberAddress = tools.findSequence(allBytes, 0, new byte[5] { 0x45, 0x44, 0x43, 0x20, 0x20 }, new byte[5] { 1, 1, 1, 1, 1 });
-                if (partnumberAddress > 0)
-                {
-                    retval = Encoding.ASCII.GetString(allBytes, partnumberAddress + 23, 10).Trim();
-                }
-            }
-            catch (Exception)
-            {
-            }
-            return retval;
-        }
+        #endregion
 
         private string DetermineNumberByFlashBank(long address, List<CodeBlock> currBlocks)
         {
@@ -121,16 +238,12 @@ namespace ECUsuite.ECU.EDC15
             return 0;
         }
 
-
-        public override SymbolCollection parseFile(string filename, out List<CodeBlock> newCodeBlocks, out List<AxisHelper> newAxisHelpers)
+        public SymbolCollection parseFile(byte[] allBytes, out List<CodeBlock> newCodeBlocks, out List<AxisHelper> newAxisHelpers)
         {
-            newCodeBlocks = new List<CodeBlock>();
             SymbolCollection newSymbols = new SymbolCollection();
-            newAxisHelpers = new List<AxisHelper>();
-            byte[] allBytes = File.ReadAllBytes(filename);
-            string boschnumber = ExtractBoschPartnumber(allBytes);
-            string softwareNumber = ExtractSoftwareNumber(allBytes);
-            partNumberConverter pnc = new partNumberConverter();
+
+            newCodeBlocks   = new List<CodeBlock>();
+            newAxisHelpers  = new List<AxisHelper>();
 
             VerifyCodeBlocks(allBytes, newSymbols, newCodeBlocks);
 
@@ -145,10 +258,6 @@ namespace ECUsuite.ECU.EDC15
                     if (len2skip % 2 > 0) len2skip -= 1;
                     if (len2skip < 0) len2skip = 0;
                     t += len2skip;
-                    /*                    if (from > 0x4dc00 && from < 0x4dd00)
-                                        {
-                                           // Console.WriteLine("map detected: " + from.ToString("X8") + " - " + t.ToString("X8") + " len: " + len2skip.ToString("X8"));
-                                        }*/
                 }
             }
 
@@ -161,7 +270,7 @@ namespace ECUsuite.ECU.EDC15
             MatchAxis(newSymbols, newAxisHelpers);
 
             RemoveNonSymbols(newSymbols, newCodeBlocks);
-            FindSVBL(allBytes, filename, newSymbols, newCodeBlocks);
+            FindSVBL(allBytes, newSymbols, newCodeBlocks);
             SymbolTranslator strans = new SymbolTranslator();
             foreach (SymbolHelper sh in newSymbols)
             {
@@ -250,15 +359,72 @@ namespace ECUsuite.ECU.EDC15
             }
         }
 
-        public override void FindSVBL(byte[] allBytes, string filename, SymbolCollection newSymbols, List<CodeBlock> newCodeBlocks)
+        public void FindSVBL(byte[] allBytes, SymbolCollection newSymbols, List<CodeBlock> newCodeBlocks)
         {
-            if (!FindSVBLSequenceOne(allBytes, filename, newSymbols, newCodeBlocks))
+            /*
+            if (!FindSVBLSequenceOne(allBytes, newSymbols, newCodeBlocks))
             {
-                FindSVBLSequenceTwo(allBytes, filename, newSymbols, newCodeBlocks);
+                FindSVBLSequenceTwo(allBytes, newSymbols, newCodeBlocks);
             }
+            */
         }
 
-        private bool FindSVBLSequenceTwo(byte[] allBytes, string filename, SymbolCollection newSymbols, List<CodeBlock> newCodeBlocks)
+        private bool FindSVBLSequenceOne(byte[] allBytes, SymbolCollection newSymbols, List<CodeBlock> newCodeBlocks)
+        {
+            bool found = true;
+            bool SVBLFound = false;
+            int offset = 0;
+
+            while (found)
+            {
+                //int SVBLAddress = tools.findSequence(allBytes, offset, new byte[10] { 0xDF, 0x7A, 0x28, 0x00, 0x00, 0x00, 0x00, 0x00, 0xDF, 0x7A }, new byte[10] { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 });
+                int SVBLAddress = tools.findSequence(allBytes, offset, new byte[16] { 0xD2, 0x00, 0xFC, 0x03, 0x00, 0x00, 0x00, 0x00, 0x04, 0x00, 0xFF, 0xFF, 0xFF, 0xC3, 0x00, 0x00 }, new byte[16] { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 1, 1 });
+
+                if (SVBLAddress > 0)
+                {
+                    //Console.WriteLine("Alternative SVBL " + SVBLAddress.ToString("X8"));
+                    SVBLFound = true;
+                    SymbolHelper shsvbl = new SymbolHelper();
+                    shsvbl.Category = "Detected maps";
+                    shsvbl.Subcategory = "Limiters";
+                    //shsvbl.Flash_start_address = SVBLAddress - 2;
+                    shsvbl.Flash_start_address = SVBLAddress + 16;
+
+                    // if value = 0xC3 0x00 -> two more back
+                    int[] testValue = tools.readdatafromfileasint(@"D:\X_TUNING\DAMOS\Damos Pack for Winols 10GB\damos pack 1\DAMOS 1\DAMOS 1\VAG EDC15P 1.9TDI\0281010744.ORI", (int)shsvbl.Flash_start_address, shsvbl.Length);
+                    int[] testValue1 = tools.convertBytesToInts(allBytes, (int)shsvbl.Flash_start_address, shsvbl.Length);
+
+                    if (testValue[0] == 0xC300) shsvbl.Flash_start_address -= 2;
+
+                    shsvbl.Varname = "SVBL Boost limiter [" + DetermineNumberByFlashBank(shsvbl.Flash_start_address, newCodeBlocks) + "]";
+                    shsvbl.Length = 2;
+                    shsvbl.CodeBlock = DetermineCodeBlockByByAddress(shsvbl.Flash_start_address, newCodeBlocks);
+                    newSymbols.Add(shsvbl);
+
+                    int MAPMAFSwitch = tools.findSequence(allBytes, SVBLAddress - 0x100, new byte[8] { 0x41, 0x02, 0xFF, 0xFF, 0x00, 0x01, 0x01, 0x00 }, new byte[8] { 1, 1, 0, 0, 1, 1, 1, 1 });
+                    if (MAPMAFSwitch > 0)
+                    {
+                        MAPMAFSwitch += 2;
+                        SymbolHelper mapmafsh = new SymbolHelper();
+                        //mapmafsh.BitMask = 0x0101;
+                        mapmafsh.Category = "Detected maps";
+                        mapmafsh.Subcategory = "Switches";
+                        mapmafsh.Flash_start_address = MAPMAFSwitch;
+                        mapmafsh.Varname = "MAP/MAF switch (0 = MAF, 257/0x101 = MAP)" + DetermineNumberByFlashBank(shsvbl.Flash_start_address, newCodeBlocks);
+                        mapmafsh.Length = 2;
+                        mapmafsh.CodeBlock = DetermineCodeBlockByByAddress(mapmafsh.Flash_start_address, newCodeBlocks);
+                        newSymbols.Add(mapmafsh);
+                        //Console.WriteLine("Found MAP MAF switch @ " + MAPMAFSwitch.ToString("X8"));
+                    }
+                    offset = SVBLAddress + 1;
+                }
+
+                else found = false;
+            }
+            return SVBLFound;
+        }
+
+        private bool FindSVBLSequenceTwo(byte[] allBytes, SymbolCollection newSymbols, List<CodeBlock> newCodeBlocks)
         {
             bool found = true;
             bool SVBLFound = false;
@@ -277,7 +443,8 @@ namespace ECUsuite.ECU.EDC15
                     //shsvbl.Flash_start_address = SVBLAddress + 16;
 
                     // if value = 0xC3 0x00 -> two more back
-                    int[] testValue = tools.readdatafromfileasint(filename, (int)shsvbl.Flash_start_address, 1, EDCFileType.EDC15P);
+                    //int[] testValue = tools.readdatafromfileasint(filename, (int)shsvbl.Flash_start_address, shsvbl.Length);
+                    int[] testValue = tools.convertBytesToInts(allBytes, (int)shsvbl.Flash_start_address, shsvbl.Length);
                     if (testValue[0] == 0xC300) shsvbl.Flash_start_address -= 2;
 
                     shsvbl.Varname = "SVBL Boost limiter [" + DetermineNumberByFlashBank(shsvbl.Flash_start_address, newCodeBlocks) + "]";
@@ -309,61 +476,8 @@ namespace ECUsuite.ECU.EDC15
             return SVBLFound;
         }
 
-        private bool FindSVBLSequenceOne(byte[] allBytes, string filename, SymbolCollection newSymbols, List<CodeBlock> newCodeBlocks)
-        {
-            bool found = true;
-            bool SVBLFound = false;
-            int offset = 0;
-            while (found)
-            {
-                //int SVBLAddress = tools.findSequence(allBytes, offset, new byte[10] { 0xDF, 0x7A, 0x28, 0x00, 0x00, 0x00, 0x00, 0x00, 0xDF, 0x7A }, new byte[10] { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 });
-                int SVBLAddress = tools.findSequence(allBytes, offset, new byte[16] { 0xD2, 0x00, 0xFC, 0x03, 0x00, 0x00, 0x00, 0x00, 0x04, 0x00, 0xFF, 0xFF, 0xFF, 0xC3, 0x00, 0x00 }, new byte[16] { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 1, 1 });
 
-                if (SVBLAddress > 0)
-                {
-                    //Console.WriteLine("Alternative SVBL " + SVBLAddress.ToString("X8"));
-                    SVBLFound = true;
-                    SymbolHelper shsvbl = new SymbolHelper();
-                    shsvbl.Category = "Detected maps";
-                    shsvbl.Subcategory = "Limiters";
-                    //shsvbl.Flash_start_address = SVBLAddress - 2;
-                    shsvbl.Flash_start_address = SVBLAddress + 16;
-
-                    // if value = 0xC3 0x00 -> two more back
-                    int[] testValue = tools.readdatafromfileasint(filename, (int)shsvbl.Flash_start_address, 1, EDCFileType.EDC15P);
-                    if (testValue[0] == 0xC300) shsvbl.Flash_start_address -= 2;
-
-                    shsvbl.Varname = "SVBL Boost limiter [" + DetermineNumberByFlashBank(shsvbl.Flash_start_address, newCodeBlocks) + "]";
-                    shsvbl.Length = 2;
-                    shsvbl.CodeBlock = DetermineCodeBlockByByAddress(shsvbl.Flash_start_address, newCodeBlocks);
-                    newSymbols.Add(shsvbl);
-
-                    int MAPMAFSwitch = tools.findSequence(allBytes, SVBLAddress - 0x100, new byte[8] { 0x41, 0x02, 0xFF, 0xFF, 0x00, 0x01, 0x01, 0x00 }, new byte[8] { 1, 1, 0, 0, 1, 1, 1, 1 });
-                    if (MAPMAFSwitch > 0)
-                    {
-                        MAPMAFSwitch += 2;
-                        SymbolHelper mapmafsh = new SymbolHelper();
-                        //mapmafsh.BitMask = 0x0101;
-                        mapmafsh.Category = "Detected maps";
-                        mapmafsh.Subcategory = "Switches";
-                        mapmafsh.Flash_start_address = MAPMAFSwitch;
-                        mapmafsh.Varname = "MAP/MAF switch (0 = MAF, 257/0x101 = MAP)" + DetermineNumberByFlashBank(shsvbl.Flash_start_address, newCodeBlocks);
-                        mapmafsh.Length = 2;
-                        mapmafsh.CodeBlock = DetermineCodeBlockByByAddress(mapmafsh.Flash_start_address, newCodeBlocks);
-                        newSymbols.Add(mapmafsh);
-                        //Console.WriteLine("Found MAP MAF switch @ " + MAPMAFSwitch.ToString("X8"));
-                    }
-
-
-                    offset = SVBLAddress + 1;
-                }
-
-                else found = false;
-            }
-            return SVBLFound;
-        }
-
-        public override void NameKnownMaps(byte[] allBytes, SymbolCollection newSymbols, List<CodeBlock> newCodeBlocks)
+        public void NameKnownMaps(byte[] allBytes, SymbolCollection newSymbols, List<CodeBlock> newCodeBlocks)
         {
             SymbolAxesTranslator st = new SymbolAxesTranslator();
 

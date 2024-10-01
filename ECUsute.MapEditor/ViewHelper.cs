@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Syncfusion.PMML;
-using ECUsuite.Tools;
+using ECUsuite.Toolbox;
 using ECUsuite.ECU.Base;
 
 namespace ECUsuite.MapEditor
@@ -91,7 +91,8 @@ namespace ECUsuite.MapEditor
                 for (int j = 0; j < symbol.Y_axis_length; j++)
                 {
                     //int rawContent = (data[mapPos] << 8) + data[mapPos + 1];
-                    short rawContent = (short)((data[mapPos] << 8) | data[mapPos + 1]);
+                    //short rawContent = (short)((data[mapPos] << 8) | data[mapPos + 1]);
+                    short rawContent = (short)((data[mapPos+1] << 8) | data[mapPos]);
                     mapData[j, i] = Math.Round((double)rawContent * symbol.Correction, 1);
                     mapPos += 2;
                 }
@@ -157,6 +158,7 @@ namespace ECUsuite.MapEditor
             {
                 DataRow row = table.NewRow();
 
+                //add column values
                 for (int j = 0; j < xValues.Length + 1; j++)
                 {
                     if ( j == 0 )

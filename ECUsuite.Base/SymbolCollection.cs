@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.ComponentModel;
+using ECUsuite.Toolbox;
+using System.Linq;
 
 namespace ECUsuite.ECU.Base
 {
@@ -107,6 +109,9 @@ namespace ECUsuite.ECU.Base
         }
 
 
+
+        #region functions for maps
+
         /// <summary>
         /// returns name of the symbol to a given address
         /// </summary>
@@ -143,6 +148,40 @@ namespace ECUsuite.ECU.Base
             }
             return string.Empty;
         }
+
+        public int GetSymbolWidth(string symbolname)
+        {
+            foreach (SymbolHelper sh in this.Symbols)
+            {
+                if (sh.Varname == symbolname || sh.Userdescription == symbolname)
+                {
+                    return sh.Y_axis_length;
+                }
+            }
+            return 0;
+        }
+
+        public int GetSymbolHeight(string symbolname)
+        {
+            foreach (SymbolHelper sh in this.Symbols)
+            {
+                if (sh.Varname == symbolname || sh.Userdescription == symbolname)
+                {
+                    return sh.X_axis_length;
+                }
+            }
+            return 0;
+        }
+
+        private bool MapsWithNameMissing(string varName)
+        {
+            foreach (SymbolHelper sh in this.Symbols)
+            {
+                if (sh.Varname.StartsWith(varName)) return false;
+            }
+            return true;
+        }
+        #endregion
 
 
         // This is a special type converter which will be associated with the EmployeeCollection class.

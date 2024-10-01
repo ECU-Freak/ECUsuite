@@ -1,19 +1,20 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-//using System.Security.Permissions;
 using Microsoft.Win32;
 using System.ComponentModel;
 using System.Data;
-//using System.Data.Odbc;
 using System.IO;
-using System.Drawing;
-//using System.Windows.Forms;
+using ECUsuite.Toolbox;
+using System.Xml.Serialization;
 
 namespace ECUsuite
 {
     public class AppSettings
     {
+        [XmlIgnore]
+        private Tools tools = new Tools();
+
         private bool m_ShowTablesUpsideDown = true;
 
         public bool ShowTablesUpsideDown
@@ -39,7 +40,7 @@ namespace ECUsuite
             }
         }
 
-        private string m_ProjectFolder = Path.Combine(Tools.Instance.GetWorkingDirectory(), "Projects");
+        private string m_ProjectFolder { get; set; }
 
         public string ProjectFolder
         {
