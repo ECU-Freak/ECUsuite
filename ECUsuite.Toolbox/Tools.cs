@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.IO;
 using System.Windows;
+using System.Collections;
 
 
 namespace ECUsuite.Toolbox
@@ -54,28 +55,12 @@ namespace ECUsuite.Toolbox
         private object syncRoot = new Object();
 
         //public EDCFileType m_currentFileType = EDCFileType.EDC15P; // default
-
         //public TransactionLog m_ProjectTransactionLog;
         public string m_CurrentWorkingProject = string.Empty;
         public ProjectLog m_ProjectLog = new ProjectLog();
 
         public string m_currentfile = string.Empty;
         public int m_currentfilelength = 0x80000;
-        public int m_codeBlock5ID = 0;
-        public int m_codeBlock6ID = 0;
-        public int m_codeBlock7ID = 0;
-        public CarMakes m_carMake = CarMakes.Unknown; // used for EDC17
-        //public List<CodeBlock> codeBlockList = new List<CodeBlock>();
-        //public SymbolCollection m_symbols = new SymbolCollection();
-        //public List<AxisHelper> AxisList = new List<AxisHelper>();
-
-        public int TorqueToPowerkW(int torque, int rpm)
-        {
-            double power = (torque * rpm) / 7121;
-            // convert to kW in stead of horsepower
-            power *= 0.73549875;
-            return Convert.ToInt32(power);
-        }
 
         public string FindAscii(byte[] allBytes, int start, int end, int length)
         {
@@ -144,128 +129,82 @@ namespace ECUsuite.Toolbox
             return false;
         }
 
-        public int PowerToTorque(int power, int rpm)
-        {
-            double torque = (power * 7121) / rpm;
-            return Convert.ToInt32(torque);
-        }
-
-        public int TorqueToPower(int torque, int rpm)
-        {
-            double power = (torque * rpm) / 7121;
-            return Convert.ToInt32(power);
-        }
-
-        public double GetCorrectionFactorForRpm(int rpm, int numberCylinders)
-        {
-            double correction = 1;
-            if (numberCylinders == 6)
-            {
-                if (rpm >= 4000) correction = 0.80;
-                else if (rpm >= 3500) correction = 0.90;
-                else if (rpm >= 3250) correction = 0.90;
-                else if (rpm >= 3000) correction = 0.93;
-                else if (rpm >= 2500) correction = 0.90;
-                else if (rpm >= 2250) correction = 0.90;
-                else if (rpm >= 1700) correction = 0.90;
-                else correction = 0.9;
-            }
-            else
-            {
-                if (rpm >= 4000) correction = 0.75;
-                else if (rpm >= 3500) correction = 0.83;
-                else if (rpm >= 3250) correction = 0.89;
-                else if (rpm >= 3000) correction = 0.96;
-                else if (rpm >= 2500) correction = 0.98;
-                else if (rpm >= 2250) correction = 0.99;
-                else correction = 1.00;
-            }
-            return correction;
-
-        }
-
-        public int IQToTorque(int IQ, int rpm, int numberCylinders)
-        {
-            double tq = Convert.ToDouble(IQ) * 6;
-
-            // correct for number of cylinders
-            tq *= numberCylinders;
-            tq /= 4;
-
-            double correction = GetCorrectionFactorForRpm(rpm, numberCylinders);
-            tq *= correction;
-            return Convert.ToInt32(tq);
-        }
-
-        public int TorqueToIQ(int torque, int rpm, int numberCylinders)
-        {
-            double iq = Convert.ToDouble(torque) / 6;
-
-            // correct for number of cylinders
-            iq *= 4;
-            iq /= numberCylinders;
-            
-
-            double correction = GetCorrectionFactorForRpm(rpm, numberCylinders);
-            iq /= correction;
-            return Convert.ToInt32(iq);
-        }
-
         public string GetWorkingDirectory()
         {
             return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "VAGEDCSuite");
         }
 
-
-        public void savedatatobinary(int address, int length, byte[] data, string filename, bool DoTransActionEntry, string note, bool reverseEdian = true)
+        /// <summary>
+        /// compares a pattern to a specific position in a byte array
+        /// </summary>
+        /// <param name="byteArray"></param>
+        /// <param name="startIndex"></param>
+        /// <param name="pattern"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentNullException"></exception>
+        /// <exception cref="ArgumentOutOfRangeException"></exception>
+        public bool CheckBytesAtPosition(byte[] byteArray, int startIndex, byte[] pattern)
         {
-            // depends on filetype (EDC16 is not reversed)
-            if (reverseEdian)
+            // Safety check: Ensure the array and pattern are not null
+            if (byteArray == null)
             {
-                data = reverseEndian(data);
+                throw new ArgumentNullException(nameof(byteArray), "The byte array cannot be null.");
             }
-            if (address > 0 && address < m_currentfilelength)
+
+            if (pattern == null)
             {
-                try
-                {
-                    byte[] beforedata = readdatafromfile(filename, address, length, reverseEdian);
+                throw new ArgumentNullException(nameof(pattern), "The pattern to check cannot be null.");
+            }
 
-                    FileStream fsi1 = File.OpenWrite(filename);
-                    BinaryWriter bw1 = new BinaryWriter(fsi1);
-                    fsi1.Position = address;
-                    for (int i = 0; i < length; i++)
-                    {
-                        bw1.Write((byte)data.GetValue(i));
-                    }
-                    fsi1.Flush();
-                    bw1.Close();
-                    fsi1.Close();
-                    fsi1.Dispose();
-                    /*
+            // Check if the startIndex and pattern length are within bounds of the byte array
+            if (startIndex < 0 || startIndex + pattern.Length > byteArray.Length)
+            {
+                throw new ArgumentOutOfRangeException(nameof(startIndex), "Start index is out of bounds, or the pattern exceeds the array length.");
+            }
 
-                    if (m_ProjectTransactionLog != null && DoTransActionEntry)
-                    {
-                        // depends on filetype (EDC16 is not reversed)
-                        if (reverseEdian)
-                        {
-                            data = reverseEndian(data);
-                        }
-                        TransactionEntry tentry = new TransactionEntry(DateTime.Now, address, length, beforedata, data, 0, 0, note);
-                        m_ProjectTransactionLog.AddToTransactionLog(tentry);
-                        if (m_CurrentWorkingProject != string.Empty)
-                        {
-                            //m_ProjectLog.WriteLogbookEntry(LogbookEntryType.TransactionExecuted, GetSymbolNameByAddress(address) + " " + note);
-                        }
-                    }
-                    */
-                }
-                catch (Exception E)
+            // Compare the bytes at the specified position
+            for (int i = 0; i < pattern.Length; i++)
+            {
+                if (byteArray[startIndex + i] != pattern[i])
                 {
-                    //WinInfoBox info = new WinInfoBox("Failed to write to binary. Is it read-only? Details: " + E.Message);
-                    MessageBox.Show("Failed to write to binary. Is it read-only? Details: " + E.Message);
+                    return false; // Byte mismatch found, pattern does not match
                 }
             }
+
+            return true; // All bytes match the pattern
         }
+
+
+        /// <summary>
+        /// returns a string from a byte array
+        /// </summary>
+        /// <param name="data"></param>
+        /// <param name="startIndex"></param>
+        /// <param name="length"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentNullException"></exception>
+        /// <exception cref="ArgumentOutOfRangeException"></exception>
+        public string extractString(byte[] data, int startIndex, int length)
+        {
+            //check if parameter match the bounds of the array
+            if (data == null)
+            {
+                throw new ArgumentNullException(nameof(data), "Das Byte-Array darf nicht null sein.");
+            }
+
+            if (startIndex < 0 || startIndex >= data.Length)
+            {
+                throw new ArgumentOutOfRangeException(nameof(startIndex), "Der Startindex liegt außerhalb des Byte-Arrays.");
+            }
+
+            if (length < 0 || (startIndex + length) > data.Length)
+            {
+                throw new ArgumentOutOfRangeException(nameof(length), "Die Länge liegt außerhalb des Byte-Arrays.");
+            }
+            //convert to string
+            return Encoding.UTF8.GetString(data, startIndex, length);
+        }
+
 
         public int findSequence(byte[] fileData, int offset, byte[] sequence, byte[] mask)
         {
@@ -275,14 +214,13 @@ namespace ECUsuite.Toolbox
             i = 0;
             max = 0;
             int position = offset;
+
             while (position < fileData.Length)
             {
                 data = (byte)fileData[position++];
                 if (data == sequence[i] || mask[i] == 0)
                 {
                     i++;
-
-
                 }
                 else
                 {
@@ -301,6 +239,148 @@ namespace ECUsuite.Toolbox
                 return -1;
             }
         }
+
+        public int findSequence(byte[] fileData, int offset, byte[] sequence)
+        {
+
+            byte data;
+            int i, max;
+            i = 0;
+            max = 0;
+            int position = offset;
+
+            while (position < fileData.Length)
+            {
+                data = (byte)fileData[position++];
+                if (data == sequence[i])
+                {
+                    i++;
+                }
+                else
+                {
+                    if (i > max) max = i;
+                    position -= i;
+                    i = 0;
+                }
+                if (i == sequence.Length) break;
+            }
+
+            if (i == sequence.Length)
+            {
+                return ((int)position - sequence.Length);
+            }
+            else
+            {
+                return -1;
+            }
+        }
+
+
+
+
+        /// <summary>
+        /// Function to find the pattern in byte array
+        /// LE -> Less or equal
+        /// GE -> Greater or equal
+        /// example1: 0x01 0x02 GE03 -> third byte can be 0x03 or greater
+        /// example2: 0x01 0x02 LE03 -> third byte can be 0x03 or less
+        /// </summary>
+        /// <param name="data"></param>
+        /// <param name="pattern"></param>
+        /// <returns></returns>
+        public int findPattern(byte[] data, int offset, string hexPattern, bool endAddr = false)
+        {
+            // Konvertiere den Hex-String in ein PatternRule[]-Array
+            PatternRule[] pattern = ConvertHexPatternToRules(hexPattern);
+
+            // Stelle sicher, dass der Offset im gültigen Bereich liegt
+            if (offset < 0 || offset > data.Length - pattern.Length)
+            {
+                return -1; // Ungültiger Offset, Rückgabe -1
+            }
+
+            // Iteriere über das Byte-Array ab dem Offset
+            for (int i = offset; i <= data.Length - pattern.Length; i++)
+            {
+                bool match = true;
+
+                // Prüfe, ob das Muster an der aktuellen Position passt
+                for (int j = 0; j < pattern.Length; j++)
+                {
+                    if (!pattern[j].Matches(data[i + j]))
+                    {
+                        match = false;
+                        break;
+                    }
+                }
+
+                // Wenn das Muster passt, gib den Startindex zurück
+                if (match)
+                {
+                    //if we want the end address of the pattern, add this to the index
+                    if(endAddr)
+                    {
+                        i += pattern.Length;
+                    }
+
+                    //return address
+                    return i;
+                }
+            }
+
+            // Wenn kein Muster gefunden wird, gib -1 zurück
+            return -1;
+        }
+
+
+        // Funktion zur Konvertierung eines Hex-String-Musters in ein PatternRule[]-Array
+        public static PatternRule[] ConvertHexPatternToRules(string hexPattern)
+        {
+            // Teile den Hex-String an den Leerzeichen
+            string[] hexBytes = hexPattern.Split(' ');
+
+            // Erstelle ein PatternRule[]-Array für das Muster
+            PatternRule[] pattern = new PatternRule[hexBytes.Length];
+
+            for (int i = 0; i < hexBytes.Length; i++)
+            {
+                if (hexBytes[i].StartsWith("GE")) // Greater or equal rule (e.g., GE05)
+                {
+                    // Extrahiere die Zahl und erstelle eine GreaterOrEqualRule
+                    int value = Convert.ToInt32(hexBytes[i].Substring(2), 16);
+                    pattern[i] = new GreaterOrEqualRule(value);
+                }
+                else if (hexBytes[i].StartsWith("LE")) // Greater or equal rule (e.g., GE05)
+                {
+                    // Extrahiere die Zahl und erstelle eine GreaterOrEqualRule
+                    int value = Convert.ToInt32(hexBytes[i].Substring(2), 16);
+                    pattern[i] = new LessOrEqualRule(value);
+                }
+
+                else if (hexBytes[i].StartsWith("0x")) // Exact byte rule (e.g., 0x00)
+                {
+                    try
+                    {
+                        // Konvertiere den Hex-String in ein Byte und erstelle eine ExactByteRule
+                        byte value = Convert.ToByte(hexBytes[i].Replace("0x", ""), 16);
+                        pattern[i] = new ExactByteRule(value);
+                    }
+                    catch
+                    {
+
+                    }
+                }
+                else
+                {
+                    throw new ArgumentException("Invalid pattern format: " + hexBytes[i]);
+                }
+            }
+
+            return pattern;
+        }
+
+
+
 
         /// <summary>
         /// 
@@ -516,4 +596,58 @@ namespace ECUsuite.Toolbox
 
 
     }
+
+    // Basis-Klasse für Regel
+    public abstract class PatternRule
+    {
+        public abstract bool Matches(byte b);
+    }
+
+    // Regel für exakte Übereinstimmung
+    public class ExactByteRule : PatternRule
+    {
+        private byte _value;
+
+        public ExactByteRule(byte value)
+        {
+            _value = value;
+        }
+
+        public override bool Matches(byte b)
+        {
+            return b == _value;
+        }
+    }
+
+    // Regel für "Greater or Equal" (größer oder gleich)
+    public class GreaterOrEqualRule : PatternRule
+    {
+        private int _value;
+
+        public GreaterOrEqualRule(int value)
+        {
+            _value = value;
+        }
+
+        public override bool Matches(byte b)
+        {
+            return b >= _value;
+        }
+    }
+
+    public class LessOrEqualRule : PatternRule
+    {
+        private int _value;
+
+        public LessOrEqualRule(int value)
+        {
+            _value = value;
+        }
+
+        public override bool Matches(byte b)
+        {
+            return b <= _value;
+        }
+    }
+
 }

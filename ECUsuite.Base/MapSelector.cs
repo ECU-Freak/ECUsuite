@@ -1,11 +1,13 @@
-﻿using System;
+﻿using MemoryPack;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
 namespace ECUsuite.ECU.Base
 {
-    public class MapSelector
+    [MemoryPackable]
+    public partial class MapSelector
     {
         private int[] _mapIndexes;
 

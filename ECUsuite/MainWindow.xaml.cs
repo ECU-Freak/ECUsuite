@@ -162,7 +162,7 @@ namespace ECUsuite
         #region File
         private void MenuFileSave_Click(object sender, RoutedEventArgs e)
         {
-            solutionExplorer.AddSymbol(new SymbolHelper() { Category = "Detected maps", Subcategory = "Turbo", Varname = "N200", Userdescription = "this is a description" });
+            solutionExplorer.AddSymbol(new SymbolHelper() { Category = "Detected maps", Subcategory = "Turbo", Varname = "N200" });
         }
 
         private void MenuFileOpen_Click(object sender, RoutedEventArgs e)

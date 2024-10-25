@@ -7,43 +7,15 @@ namespace ECUsuite.ECU.Base
 {
     public class CodeBlock
     {
-        private GearboxType m_blockGearboxType = GearboxType.Manual;
 
-        public GearboxType BlockGearboxType
-        {
-            get { return m_blockGearboxType; }
-            set { m_blockGearboxType = value; }
-        }
+        public GearboxType gearboxType { get; set; } = GearboxType.Manual;
 
-        int startAddress = 0;
+        public int StartAddress { get; set; } = 0;
 
-        public int StartAddress
-        {
-            get { return startAddress; }
-            set { startAddress = value; }
-        }
-        int endAddress = 0;
+        public int EndAddress { get; set; } = 0;
 
-        public int EndAddress
-        {
-            get { return endAddress; }
-            set { endAddress = value; }
-        }
+        public int CodeID { get; set; } = 0;
 
-        int codeID = 0;
-
-        public int CodeID
-        {
-            get { return codeID; }
-            set { codeID = value; }
-        }
-
-        int addressID = 0;
-
-        public int AddressID
-        {
-            get { return addressID; }
-            set { addressID = value; }
-        }
+        public int AddressID { get; set; } = 0;
     }
 }

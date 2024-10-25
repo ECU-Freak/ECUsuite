@@ -12,9 +12,9 @@ namespace ECUsuite
         {
             foreach (SymbolHelper sh in curSymbolCollection)
             {
-                if (sh.Varname == symbolname || sh.Userdescription == symbolname)
+                if (sh.Varname == symbolname || sh.Description == symbolname)
                 {
-                    return sh.X_axis_ID;
+                    return sh.Xaxis.ID;
                 }
             }
             return 0;
@@ -23,9 +23,9 @@ namespace ECUsuite
         {
             foreach (SymbolHelper sh in curSymbolCollection)
             {
-                if (sh.Varname == symbolname || sh.Userdescription == symbolname)
+                if (sh.Varname == symbolname || sh.Description == symbolname)
                 {
-                    return sh.Y_axis_ID;
+                    return sh.Yaxis.ID;
                 }
             }
             return 0;

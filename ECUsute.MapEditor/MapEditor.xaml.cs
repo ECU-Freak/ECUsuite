@@ -128,17 +128,17 @@ namespace ECUsuite.MapEditor
         {
 
             chart3d.ZBindingPath = "xValue";
-            chart3d.ZAxis   = new SurfaceAxis() { Header = Symbol.X_axis_descr };
+            chart3d.ZAxis   = new SurfaceAxis() { Header = Symbol.Xaxis.Description };
 
             chart3d.XBindingPath = "yValue";
-            chart3d.XAxis   = new SurfaceAxis() { Header = Symbol.Y_axis_descr };
+            chart3d.XAxis   = new SurfaceAxis() { Header = Symbol.Yaxis.Description };
 
 
             chart3d.YBindingPath = "zValue";
-            chart3d.YAxis   = new SurfaceAxis() { Header = Symbol.Z_axis_descr };
+            chart3d.YAxis   = new SurfaceAxis() { Header = Symbol.Description };
 
-            chart3d.RowSize     = Symbol.Y_axis_length;
-            chart3d.ColumnSize  = Symbol.X_axis_length;
+            chart3d.RowSize     = Symbol.Yaxis.Length;
+            chart3d.ColumnSize  = Symbol.Xaxis.Length;
             chart3d.ItemsSource = data.mapSurface;
         }
 

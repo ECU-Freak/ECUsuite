@@ -1,0 +1,14 @@
+﻿<Window x:Class="WinOlsParser.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:WinOlsParser"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="450" Width="800">
+    <Grid>
+        <TextBox x:Name="tbFilePath" HorizontalAlignment="Left" Margin="26,27,0,0" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" Width="202"/>
+        <Button x:Name="btnReadFile" Content="read File" HorizontalAlignment="Left" Margin="26,62,0,0" VerticalAlignment="Top" Height="18" Width="64" Click="btnReadFile_Click"/>
+
+    </Grid>
+</Window>

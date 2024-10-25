@@ -75,25 +75,25 @@ namespace ECUsuite.MapEditor
         public void addDataRaw(SymbolHelper symbol, int[] xAxis, int[] yAxis, byte[] data)
         {
             int mapPos = 0;
-            double[,] mapData = new double[symbol.Y_axis_length, symbol.X_axis_length];
+            double[,] mapData = new double[symbol.Yaxis.Length, symbol.Xaxis.Length];
 
 
             //convert x axis
-            double[] x_Axis = xAxis.Select(x => x * symbol.X_axis_correction).ToArray();
+            double[] x_Axis = xAxis.Select(x => x * symbol.Xaxis.factor.factor).ToArray();
 
             //convert y axis
-            double[] y_Axis = yAxis.Select(x => x * symbol.Y_axis_correction).ToArray();
+            double[] y_Axis = yAxis.Select(x => x * symbol.Yaxis.factor.factor).ToArray();
 
             //convert data
-            for (int i = 0; i < symbol.X_axis_length; i++)
+            for (int i = 0; i < symbol.Xaxis.Length; i++)
             {
                 //loop through x axis
-                for (int j = 0; j < symbol.Y_axis_length; j++)
+                for (int j = 0; j < symbol.Yaxis.Length; j++)
                 {
                     //int rawContent = (data[mapPos] << 8) + data[mapPos + 1];
                     //short rawContent = (short)((data[mapPos] << 8) | data[mapPos + 1]);
                     short rawContent = (short)((data[mapPos+1] << 8) | data[mapPos]);
-                    mapData[j, i] = Math.Round((double)rawContent * symbol.Correction, 1);
+                    mapData[j, i] = Math.Round((double)rawContent * symbol.factor.factor, 1);
                     mapPos += 2;
                 }
             }

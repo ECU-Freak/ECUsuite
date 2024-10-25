@@ -1,14 +1,67 @@
+using MemoryPack;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Text;
+using System.Windows.Navigation;
+using MemoryPack;
 
 namespace ECUsuite.ECU.Base
 {
-    public class SymbolHelper
+
+    public enum Bitness { Bit8 = 0x01, Bit16LoHi = 0x03, Bit16HiLo = 0x02, Bit32, Bit64 }
+    public enum DataType {single, oneDim, twoDim, twoInv }
+
+    [MemoryPackable]
+    public partial class SymbolHelper
     {
 
+        [Description("OEM Name of the variable")]
+        public string Varname { get; set; } = string.Empty;
+
+        [Description("General NickName of the variable like N75, Torque limiter")]
+        public string NickName { get; set; } = string.Empty;
+
+        [Description("Additional comments for symbol")]
+        public string Description { get; set; } = string.Empty;
+
+        [Description("Unit of the symbol values")]
+        public string Unit { get; set; } = string.Empty;
+
+        [Description("Id of the symbol, used for function description")]
+        /// <summary>
+        /// id from ecu description, like zmwMKOR_KF
+        /// </summary>
+        public string Id { get; set; } = string.Empty;
+        [Description("Address where content start in flash, 1Byte base")]
+        public int StartAddress { get; set; }
+
+        [Description("Defines the type of the map, 1D, 2D, etc.")]
+        public int Type { get; set; } = 0;
+
+        [Description("Length of the symbol in bytes")]
+        public int Length { get; set; }
+
+        [Description("Factors to represent the data")]
+        public Ffactor      factor { get; set; } = new Ffactor();
+
+        [Description("Xaxis description of the symbol")]
+        public SymbolAxis   Xaxis { get; set; } = new SymbolAxis();
+
+        [Description("Yaxis description of the symbol")]
+        public SymbolAxis   Yaxis { get; set; } = new SymbolAxis();
+
+        public string Comment { get; set; } = string.Empty;
+
+        #region MISC
+        //Do not use, legacy
+        public int CodeBlock { get; set; }
+        //Do not use, legacy
+        public MapSelector MapSelector { get; set; }
+        #endregion
+
+        #region additional functions
         [Description("Defines the path to the symbol in Project Explorer")]
         public string Path { get; set; } = string.Empty;
 
@@ -22,12 +75,13 @@ namespace ECUsuite.ECU.Base
         }
 
         [Description("returns the address of the symbol as hex string")]
-        public string SymboAddressHex 
-        { get 
-            { 
-                if(flash_start_address == 0) return string.Empty;
-                return flash_start_address.ToString("X"); 
-            } 
+        public string SymboAddressHex
+        {
+            get
+            {
+                if (StartAddress == 0) return string.Empty;
+                return StartAddress.ToString("X");
+            }
         }
 
         [Description("returns the size of the symbol as string X Y")]
@@ -35,8 +89,8 @@ namespace ECUsuite.ECU.Base
         {
             get
             {
-                if (X_axis_length == 0 || Y_axis_length == 0) return string.Empty;
-                return X_axis_length.ToString() + "x" + Y_axis_length.ToString();
+                if (Xaxis.Length == 0 || Yaxis.Length == 0) return string.Empty;
+                return Xaxis.Length.ToString() + "x" + Yaxis.Length.ToString();
             }
         }
 
@@ -52,300 +106,131 @@ namespace ECUsuite.ECU.Base
             return $"{Varname} | {SymboAddressHex} | {SymbolSizeXY} | {Description}";
         }
 
-        public bool Is1D = false;
-		public bool Is2D = false;
-		public bool Is3D = false;
+        public string Category { get; set; } = "Unknown maps";
+        public string Subcategory { get; set; } = string.Empty;
 
-        private string m_xaxisUnits = string.Empty;
-
-        public string XaxisUnits
+        /// <summary>
+        /// convert the data to csv format
+        /// </summary>
+        /// <returns></returns>
+        public string ToCsv()
         {
-            get { return m_xaxisUnits; }
-            set { m_xaxisUnits = value; }
-        }
-        private string m_yaxisUnits = string.Empty;
+            string csvRow = $"{this.Varname};" +
+                            $"{this.NickName};" +
+                            $"{this.Description};" +
+                            $"{this.Unit};" +
+                            $"{this.Id};" +
+                            $"{this.StartAddress};" +
+                            $"{this.Type};" +
+                            $"{this.Length};" +
+                            $"{this.factor.factor};" +            // Hauptfaktor
+                            $"{this.factor.signed};" +            // Signiert
+                            $"{this.factor.bitness};" +           // Bitness (z.B. 8-Bit; 16-Bit)
+                            $"{this.factor.offset};" +            // Offset
+                            $"{this.factor.reciprocal};" +        // Reziprok
+                            $"{this.factor.prePrecision};" +      // Vor-Präzision
+                            $"{this.factor.postPrecision};" +     // Nach-Präzision
 
-        public string YaxisUnits
+                            // X-Achse
+                            $"{this.Xaxis.Length};" +             // X-Achse Länge
+                            $"{this.Xaxis.StartAddress};" +       // X-Achse Startadresse
+                            $"{this.Xaxis.Unit};" +               // X-Achse Einheit
+                            $"{this.Xaxis.Description};" +        // X-Achse Beschreibung
+                            $"{this.Xaxis.factor.factor};" +      // X-Achse Faktor
+                            $"{this.Xaxis.factor.signed};" +      // X-Achse Signiert
+                            $"{this.Xaxis.factor.bitness};" +     // X-Achse Bitness
+                            $"{this.Xaxis.factor.offset};" +      // X-Achse Offset
+                            $"{this.Xaxis.factor.reciprocal};" +  // X-Achse Reziprok
+                            $"{this.Xaxis.factor.prePrecision};" +// X-Achse Vor-Präzision
+                            $"{this.Xaxis.factor.postPrecision};" +// X-Achse Nach-Präzision
+
+                            // Y-Achse
+                            $"{this.Yaxis.Length};" +             // Y-Achse Länge
+                            $"{this.Yaxis.StartAddress};" +       // Y-Achse Startadresse
+                            $"{this.Yaxis.Unit};" +               // Y-Achse Einheit
+                            $"{this.Yaxis.Description};" +        // Y-Achse Beschreibung
+                            $"{this.Yaxis.factor.factor};" +      // Y-Achse Faktor
+                            $"{this.Yaxis.factor.signed};" +      // Y-Achse Signiert
+                            $"{this.Yaxis.factor.bitness};" +     // Y-Achse Bitness
+                            $"{this.Yaxis.factor.offset};" +      // Y-Achse Offset
+                            $"{this.Yaxis.factor.reciprocal};" +  // Y-Achse Reziprok
+                            $"{this.Yaxis.factor.prePrecision};" +// Y-Achse Vor-Präzision
+                            $"{this.Yaxis.factor.postPrecision};";// Y-Achse Nach-Präzision
+            return csvRow;
+        }
+        
+        /// <summary>
+        /// returns the header for CSV format
+        /// </summary>
+        /// <returns></returns>
+        public string getCsvHeader()
         {
-            get { return m_yaxisUnits; }
-            set { m_yaxisUnits = value; }
+            return("Varname;NickName;Description;Unit;Id;StartAddress;Type;Length;Factor;Signed;Bitness;FactorOffset;Reciprocal;PrePrecision;PostPrecision;XaxisLength;XaxisStartAddress;XaxisUnit;XaxisDescription;XaxisFactor;XaxisSigned;XaxisBitness;XaxisOffset;XaxisReciprocal;XaxisPrePrecision;XaxisPostPrecision;YaxisLength;YaxisStartAddress;YaxisUnit;YaxisDescription;YaxisFactor;YaxisSigned;YaxisBitness;YaxisOffset;YaxisReciprocal;YaxisPrePrecision;YaxisPostPrecision;Category;Subcategory;Path");
         }
+        
+        #endregion
+    }
 
-        private MapSelector _mapSelector = new MapSelector();
+    /// <summary>
+    /// structure for axis description
+    /// </summary>
+    [MemoryPackable]
+    public partial class SymbolAxis
+    {
+        #region description
+        /// <summary>
+        /// description of the axis [Engine RPM]
+        /// </summary>
+        public string  Description  { get; set; } = string.Empty;
+        /// <summary>
+        /// unit of the axis [1/min]
+        /// </summary>
+        public string Unit          { get; set; } = string.Empty;
+        /// <summary>
+        /// id from ecu description, like zmwMKOR_KF
+        /// </summary>
+        public string Id            { get; set; } = string.Empty;
+        public int StartAddress     { get; set; } = 0;
+        public int Length           { get; set; } = 0;
 
-        public MapSelector MapSelector
-        {
-            get { return _mapSelector; }
-            set { _mapSelector = value; }
-        }
+        #endregion
 
-        private int _bitMask = 0x00000;
-
-        public int BitMask
-        {
-            get { return _bitMask; }
-            set { _bitMask = value; }
-        }
-
-        System.Drawing.Color _color = System.Drawing.Color.Black;
-
-        public System.Drawing.Color Color
-        {
-            get { return _color; }
-            set { _color = value; }
-        }
-
-        private byte[] _currentdata;
-
-        public byte[] Currentdata
-        {
-            get { return _currentdata; }
-            set { _currentdata = value; }
-        }
-
-        int symbol_number = 0;
-
-        public int Symbol_number
-        {
-            get { return symbol_number; }
-            set { symbol_number = value; }
-        }
-
-        bool _selected = false;
-
-        public bool Selected
-        {
-            get { return _selected; }
-            set { _selected = value; }
-        }
-
-        int symbol_type = 0;
-
-        public int Symbol_type
-        {
-            get { return symbol_type; }
-            set { symbol_type = value; }
-        }
+        /// <summary>
+        /// factor to calculate axis
+        /// </summary>
+        public Ffactor factor = new Ffactor();
 
 
-        int internal_address = 0x00000;
 
-        public int Internal_address
-        {
-            get { return internal_address; }
-            set { internal_address = value; }
-        }
+        #region legacy support
+        /// <summary>
+        /// lagacy do not use
+        /// </summary>
+        public int ID { get; set; } = 0;
 
+        public bool assigned { get; set; } = false; 
 
-        Int64 start_address = 0x00000;
+        #endregion
 
-        Int64 flash_start_address = 0x00000;
+    }
 
-        public Int64 Flash_start_address
-        {
-            get { return flash_start_address; }
-            set { flash_start_address = value; }
-        }
+    /// <summary>
+    /// structure for factor, bitness, etc.
+    /// </summary>
+    [MemoryPackable]
+    public partial class Ffactor
+    {
+        #region data organisation
+        public bool     signed      { get; set; } = false;
+        public Bitness  bitness     { get; set; } = Bitness.Bit8;
+        #endregion
 
-        int symbol_number_ECU = 0;
+        public double   factor          { get; set; } = 1;
+        public double   offset          { get; set; } = 0;
+        public double   reciprocalFactor { get; set; } = 1;
+        public bool     reciprocal      { get; set; } = false;
+        public int      prePrecision    { get; set; } = -1;
+        public int      postPrecision   { get; set; } = 2;
 
-        public int Symbol_number_ECU
-        {
-            get { return symbol_number_ECU; }
-            set { symbol_number_ECU = value; }
-        }
-
-        public Int64 Start_address
-        {
-            get { return start_address; }
-            set { start_address = value; }
-        }
-        int length = 0x00;
-
-        public int Length
-        {
-            get { return length; }
-            set { length = value; }
-        }
-
-        string _userdescription = string.Empty;
-
-        public string Userdescription
-        {
-            get { return _userdescription; }
-            set { _userdescription = value; }
-        }
-
-        string varname = string.Empty;
-
-        public string Varname
-        {
-            get { return varname; }
-            set { varname = value; }
-        }
-
-        string _description = string.Empty;
-
-        public string Description
-        {
-            get { return _description; }
-            set { _description = value; }
-        }
-
-        string _category = "Unknown maps";
-
-        public string Category
-        {
-            get { return _category; }
-            set { _category = value; }
-        }
-        string _subcategory = "Unknown";
-
-        public string Subcategory
-        {
-            get { return _subcategory; }
-            set { _subcategory = value; }
-        }
-
-
-        private int _x_axis_length = 0;
-
-        public int X_axis_length
-        {
-            get { return _x_axis_length; }
-            set { _x_axis_length = value; }
-        }
-        private int _y_axis_length = 0;
-
-        public int Y_axis_length
-        {
-            get { return _y_axis_length; }
-            set { _y_axis_length = value; }
-        }
-
-        private int _x_axis_ID = 0;
-
-        public int X_axis_ID
-        {
-            get { return _x_axis_ID; }
-            set { _x_axis_ID = value; }
-        }
-        private int _y_axis_ID = 0;
-
-        public int Y_axis_ID
-        {
-            get { return _y_axis_ID; }
-            set { _y_axis_ID = value; }
-        }
-
-        private int _x_axis_address = 0;
-
-        public int X_axis_address
-        {
-            get { return _x_axis_address; }
-            set { _x_axis_address = value; }
-        }
-        private int _y_axis_address = 0;
-
-        public int Y_axis_address
-        {
-            get { return _y_axis_address; }
-            set { _y_axis_address = value; }
-        }
-
-        private bool _xaxisAssigned = false;
-
-        public bool XaxisAssigned
-        {
-            get { return _xaxisAssigned; }
-            set { _xaxisAssigned = value; }
-        }
-        private bool _yaxisAssigned = false;
-
-        public bool YaxisAssigned
-        {
-            get { return _yaxisAssigned; }
-            set { _yaxisAssigned = value; }
-        }
-
-        private string _x_axis_descr = string.Empty;
-
-        public string X_axis_descr
-        {
-            get { return _x_axis_descr; }
-            set
-            {
-                _x_axis_descr = value;
-                _xaxisAssigned = true;
-            }
-        }
-        private string _y_axis_descr = string.Empty;
-
-        public string Y_axis_descr
-        {
-            get { return _y_axis_descr; }
-            set
-            {
-                _y_axis_descr = value;
-                _yaxisAssigned = true;
-            }
-        }
-        private string _z_axis_descr = string.Empty;
-
-        public string Z_axis_descr
-        {
-            get { return _z_axis_descr; }
-            set { _z_axis_descr = value; }
-        }
-        private double _x_axis_correction = 1;
-
-        public double X_axis_correction
-        {
-            get { return _x_axis_correction; }
-            set { _x_axis_correction = value; }
-        }
-        private double _x_axis_offset = 0;
-
-        public double X_axis_offset
-        {
-            get { return _x_axis_offset; }
-            set { _x_axis_offset = value; }
-        }
-        private double _y_axis_correction = 1;
-
-        public double Y_axis_correction
-        {
-            get { return _y_axis_correction; }
-            set { _y_axis_correction = value; }
-        }
-        private double _y_axis_offset = 0;
-
-        public double Y_axis_offset
-        {
-            get { return _y_axis_offset; }
-            set { _y_axis_offset = value; }
-        }
-        private double _correction = 1;
-
-        public double Correction
-        {
-            get { return _correction; }
-            set { _correction = value; }
-        }
-        private double _offset = 0;
-
-        public double Offset
-        {
-            get { return _offset; }
-            set { _offset = value; }
-        }
-
-        private int _codeBlock = 0;
-
-        public int CodeBlock
-        {
-            get { return _codeBlock; }
-            set { _codeBlock = value; }
-        }
     }
 }

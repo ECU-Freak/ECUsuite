@@ -74,17 +74,17 @@ namespace ECUsuite.Data
         {
             SymbolData returnData = new SymbolData();
 
-            int xlen        = symbols.ToList().First(x => x.Varname == symbol.Varname).X_axis_length;
-            int xaddress    = symbols.ToList().First(x => x.Varname == symbol.Varname).X_axis_address;
-            int ylen        = symbols.ToList().First(x => x.Varname == symbol.Varname).Y_axis_length;
-            int yaddress    = symbols.ToList().First(x => x.Varname == symbol.Varname).Y_axis_address;
+            int xlen        = symbols.ToList().First(x => x.Varname == symbol.Varname).Xaxis.Length;
+            int xaddress    = symbols.ToList().First(x => x.Varname == symbol.Varname).Xaxis.StartAddress;
+            int ylen        = symbols.ToList().First(x => x.Varname == symbol.Varname).Yaxis.Length;
+            int yaddress    = symbols.ToList().First(x => x.Varname == symbol.Varname).Yaxis.StartAddress;
 
             returnData.X_axisvalues = tools.convertBytesToInts(fileData, yaddress,ylen);
             returnData.Y_axisvalues = tools.convertBytesToInts(fileData, xaddress, xlen);
 
             returnData.Map_content = new byte[symbol.Length];
 
-            Array.Copy(fileData, symbol.Flash_start_address, returnData.Map_content, 0, symbol.Length);
+            Array.Copy(fileData, symbol.StartAddress, returnData.Map_content, 0, symbol.Length);
             
             return returnData;
         }

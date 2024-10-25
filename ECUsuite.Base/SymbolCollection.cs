@@ -7,7 +7,7 @@ using System.Linq;
 
 namespace ECUsuite.ECU.Base
 {
-    public class SymbolCollection : SortableCollectionBase, ICustomTypeDescriptor
+    public partial class SymbolCollection : SortableCollectionBase, ICustomTypeDescriptor
     {
         public List<SymbolHelper> ToList()
         {
@@ -93,6 +93,8 @@ namespace ECUsuite.ECU.Base
         {
             get { return this; }
         }
+
+
         internal class SymbolConverter : ExpandableObjectConverter
         {
             public override object ConvertTo(ITypeDescriptorContext context, System.Globalization.CultureInfo culture, object value, Type destType)
@@ -102,7 +104,7 @@ namespace ECUsuite.ECU.Base
                     // Cast the value to an Employee type
                     SymbolHelper pp = (SymbolHelper)value;
 
-                    return pp.Varname + ", " + pp.Start_address + ", " + pp.Length;
+                    return pp.Varname + ", " + pp.StartAddress + ", " + pp.Length;
                 }
                 return base.ConvertTo(context, culture, value, destType);
             }
@@ -121,7 +123,7 @@ namespace ECUsuite.ECU.Base
         {
             foreach (SymbolHelper sh in this)
             {
-                if (sh.Flash_start_address == address) return sh.Varname;
+                if (sh.StartAddress == address) return sh.Varname;
             }
             return address.ToString();
         }
@@ -130,9 +132,9 @@ namespace ECUsuite.ECU.Base
         {
             foreach (SymbolHelper sh in curSymbolCollection)
             {
-                if (sh.Varname.StartsWith(symbolname) || sh.Userdescription.StartsWith(symbolname))
+                if (sh.Varname.StartsWith(symbolname) || sh.Description.StartsWith(symbolname))
                 {
-                    return sh.Flash_start_address;
+                    return sh.StartAddress;
                 }
             }
             return 0;
@@ -142,9 +144,9 @@ namespace ECUsuite.ECU.Base
         {
             foreach (SymbolHelper sh in this)
             {
-                if (sh.Flash_start_address <= address && (sh.Flash_start_address + sh.Length) >= address) return sh.Varname;
-                if (sh.Flash_start_address <= addressTo && (sh.Flash_start_address + sh.Length) >= addressTo) return sh.Varname;
-                if (sh.Flash_start_address >= address && (sh.Flash_start_address + sh.Length) <= addressTo) return sh.Varname;
+                if (sh.StartAddress <= address      && (sh.StartAddress + sh.Length) >= address)    return sh.Varname;
+                if (sh.StartAddress <= addressTo    && (sh.StartAddress + sh.Length) >= addressTo)  return sh.Varname;
+                if (sh.StartAddress >= address      && (sh.StartAddress + sh.Length) <= addressTo)  return sh.Varname;
             }
             return string.Empty;
         }
@@ -153,9 +155,9 @@ namespace ECUsuite.ECU.Base
         {
             foreach (SymbolHelper sh in this.Symbols)
             {
-                if (sh.Varname == symbolname || sh.Userdescription == symbolname)
+                if (sh.Varname == symbolname || sh.Description == symbolname)
                 {
-                    return sh.Y_axis_length;
+                    return sh.Yaxis.Length;
                 }
             }
             return 0;
@@ -165,9 +167,9 @@ namespace ECUsuite.ECU.Base
         {
             foreach (SymbolHelper sh in this.Symbols)
             {
-                if (sh.Varname == symbolname || sh.Userdescription == symbolname)
+                if (sh.Varname == symbolname || sh.Description == symbolname)
                 {
-                    return sh.X_axis_length;
+                    return sh.Xaxis.Length;
                 }
             }
             return 0;
@@ -334,7 +336,7 @@ namespace ECUsuite.ECU.Base
                     StringBuilder sb = new StringBuilder();
                     sb.Append(emp.Varname);
                     sb.Append(", ");
-                    sb.Append(emp.Start_address);
+                    sb.Append(emp.StartAddress);
                     sb.Append(", ");
                     sb.Append(emp.Length);
                     return sb.ToString();
